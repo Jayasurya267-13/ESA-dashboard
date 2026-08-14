@@ -1,0 +1,51 @@
+# =========================
+# Python
+# =========================
+
+backend/venv/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# =========================
+# Node / React
+# =========================
+
+frontend/node_modules/
+frontend/dist/
+
+# =========================
+# Environment variables
+# =========================
+
+.env
+.env.*
+!.env.example
+
+# =========================
+# Database
+# =========================
+
+database/*.db
+database/*.sqlite
+database/*.sqlite3
+
+# =========================
+# Python cache
+# =========================
+
+.pytest_cache/
+.mypy_cache/
+
+# =========================
+# IDE
+# =========================
+
+.vscode/
+
+# =========================
+# Operating system
+# =========================
+
+.DS_Store
+Thumbs.db
