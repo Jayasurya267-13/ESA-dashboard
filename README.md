@@ -1,5 +1,67 @@
 # Edge AI Based Predictive Maintenance Node
 
+## Project Overview
+
+An Edge AI based predictive maintenance system designed to monitor machine
+parameters, detect abnormal operating conditions, identify possible faults,
+and provide predictive maintenance information through a web dashboard.
+
+## Main Objectives
+
+- Monitor machine parameters
+- Detect abnormal conditions
+- Perform AI-based fault detection
+- Display real-time machine information
+- Store historical sensor data
+- Generate maintenance alerts
+- Support Proteus-based simulation
+- Provide a path toward future hardware implementation
+
+## System Architecture
+
+Sensors / Proteus
+        ↓
+Edge Node
+        ↓
+Backend API
+        ↓
+AI Fault Detection
+        ↓
+Database
+        ↓
+Web Dashboard
+
+## Technology Stack
+
+Frontend:
+- React
+- Vite
+
+Backend:
+- Python
+- FastAPI
+
+AI:
+- Python
+- Machine Learning / Deep Learning
+
+Database:
+- SQLite initially
+- PostgreSQL later
+
+Simulation:
+- Proteus
+
+Hardware:
+- Microcontroller / ESP32
+- Sensors
+
+## Development Status
+
+Day 1 - Project foundation
+
+# Edge AI Based Predictive Maintenance Node
+
 ## 1. Project Overview
 
 The Edge AI Based Predictive Maintenance Node is an intelligent machine
