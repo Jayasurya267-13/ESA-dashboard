@@ -256,3 +256,139 @@
 .health-display p {
     font-size: 13px;
 }
+/* Day 3 - Dynamic Monitoring */
+
+.system-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.system-status.normal {
+    background: #e8f7ee;
+    color: #16834b;
+}
+
+.system-status.warning {
+    background: #fff5d9;
+    color: #9a6a00;
+}
+
+.system-status.critical {
+    background: #fdeaea;
+    color: #c62828;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.metric-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.status-indicator {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-indicator.normal {
+    background: #22a060;
+}
+
+.status-indicator.warning {
+    background: #e0a500;
+}
+
+.status-indicator.critical {
+    background: #d52d2d;
+}
+
+.fault-panel {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 22px;
+    border-radius: 14px;
+    background: white;
+    border: 1px solid #e5e9ef;
+}
+
+.fault-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fault-info {
+    flex: 1;
+}
+
+.fault-info h3 {
+    margin: 0 0 6px;
+    font-size: 17px;
+}
+
+.fault-info p {
+    margin: 0;
+    color: #7b8494;
+    font-size: 13px;
+}
+
+.fault-status {
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.fault-status.normal {
+    background: #e8f7ee;
+    color: #16834b;
+}
+
+.fault-status.warning {
+    background: #fff5d9;
+    color: #9a6a00;
+}
+
+.fault-status.critical {
+    background: #fdeaea;
+    color: #c62828;
+}
+
+.trend-placeholder {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.trend-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px;
+    background: white;
+    border: 1px solid #e5e9ef;
+    border-radius: 12px;
+}
+
+.trend-line span {
+    color: #687386;
+    font-size: 14px;
+}
+
+.trend-line strong {
+    font-size: 18px;
+}
