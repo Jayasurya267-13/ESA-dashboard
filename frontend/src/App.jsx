@@ -26,54 +26,46 @@ function App() {
 
     useEffect(() => {
 
-        const interval = setInterval(() => {
+    const fetchSensorData = async () => {
 
-            const newTemperature =
-                Number((65 + Math.random() * 10).toFixed(1));
+        try {
 
-            const newVibration =
-                Number((2.5 + Math.random() * 1.5).toFixed(2));
+            const response = await fetch(
+                "http://127.0.0.1:8000/api/sensor-data"
+            );
 
-            const newCurrent =
-                Number((1.8 + Math.random() * 0.8).toFixed(2));
+            const data = await response.json();
 
-            let newHealth = 100;
+            setTemperature(data.temperature);
+            setVibration(data.vibration);
+            setCurrent(data.current);
+            setHealth(data.health);
 
-            if (newTemperature > 72) {
-                newHealth -= 20;
-            }
+            setMachineStatus(data.status);
+            setFaultMessage(data.fault);
 
-            if (newVibration > 3.5) {
-                newHealth -= 20;
-            }
+        } catch (error) {
 
-            if (newCurrent > 2.4) {
-                newHealth -= 15;
-            }
+            console.error(
+                "Unable to connect to backend:",
+                error
+            );
 
-            newHealth = Math.max(40, newHealth);
+        }
+    };
 
-            setTemperature(newTemperature);
-            setVibration(newVibration);
-            setCurrent(newCurrent);
-            setHealth(newHealth);
 
-            if (newHealth >= 80) {
-                setMachineStatus("Normal");
-                setFaultMessage("No fault detected");
-            } else if (newHealth >= 60) {
-                setMachineStatus("Warning");
-                setFaultMessage("Abnormal sensor condition");
-            } else {
-                setMachineStatus("Critical");
-                setFaultMessage("Possible machine fault");
-            }
+    fetchSensorData();
 
-        }, 3000);
+    const interval = setInterval(
+        fetchSensorData,
+        3000
+    );
 
-        return () => clearInterval(interval);
 
-    }, []);
+    return () => clearInterval(interval);
+
+}, []);
 
     return (
         <div className="app">
