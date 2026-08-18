@@ -21,6 +21,9 @@ function App() {
     const [current, setCurrent] = useState(2.13);
     const [health, setHealth] = useState(91);
 
+    const [connectionStatus, setConnectionStatus] = useState("Connected");
+    const [lastUpdated, setLastUpdated] = useState("--");
+
     const [machineStatus, setMachineStatus] = useState("Normal");
     const [faultMessage, setFaultMessage] = useState("No fault detected");
 
@@ -34,7 +37,17 @@ function App() {
                 "http://127.0.0.1:8000/api/sensor-data"
             );
 
+            if (!response.ok) {
+                throw new Error("Backend request failed");
+            }
+
             const data = await response.json();
+
+            setConnectionStatus("Connected");
+
+            setLastUpdated(
+                new Date(data.timestamp).toLocaleTimeString()
+            );
 
             setTemperature(data.temperature);
             setVibration(data.vibration);
@@ -50,6 +63,8 @@ function App() {
                 "Unable to connect to backend:",
                 error
             );
+
+            setConnectionStatus("Disconnected");
 
         }
     };
@@ -87,6 +102,13 @@ function App() {
                         <div className={`system-status ${machineStatus.toLowerCase()}`}>
                             <span className="status-dot"></span>
                             {machineStatus}
+                        </div>
+                        <div className={`connection-status ${connectionStatus.toLowerCase()}`}>
+                            <span className="status-dot"></span>
+                            Backend: {connectionStatus}
+                        </div>
+                        <div className="last-updated">
+                            Last updated: {lastUpdated}
                         </div>
                     </div>
 

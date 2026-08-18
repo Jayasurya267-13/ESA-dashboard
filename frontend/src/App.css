@@ -392,3 +392,30 @@
 .trend-line strong {
     font-size: 18px;
 }
+/* Day 5 - Backend Connection Status */
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.connection-status.connected {
+    background: #e8f7ee;
+    color: #16834b;
+}
+
+.connection-status.disconnected {
+    background: #fdeaea;
+    color: #c62828;
+}
+
+.last-updated {
+    font-size: 12px;
+    color: #7b8494;
+    margin-top: 8px;
+}
