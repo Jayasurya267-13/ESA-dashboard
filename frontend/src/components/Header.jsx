@@ -1,6 +1,6 @@
 import { Bell, UserCircle } from "lucide-react";
 
-function Header() {
+function Header({ connectionStatus }) {
     return (
         <header className="header">
 
@@ -12,8 +12,16 @@ function Header() {
             <div className="header-right">
 
                 <div className="system-status">
-                    <span className="status-dot"></span>
-                    System Online
+                    <span
+                        className={`status-dot ${
+                            connectionStatus === "Connected"
+                            ? "online"
+                            : "offline"
+                        }`}
+
+                    ></span>
+
+                    <span>{connectionStatus}</span>
                 </div>
 
                 <Bell size={22} />

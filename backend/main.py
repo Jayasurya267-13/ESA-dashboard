@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 import random
 
+from services.fault_detection import detect_fault
+
 app = FastAPI(
     title="ESA Predictive Maintenance API",
     description="Backend API for Edge AI based predictive maintenance dashboard",
@@ -31,41 +33,24 @@ def root():
 @app.get("/api/sensor-data")
 def get_sensor_data():
 
-    temperature = round(random.uniform(65, 75), 1)
-    vibration = round(random.uniform(2.5, 4.0), 2)
-    current = round(random.uniform(1.8, 2.6), 2)
+    temperature = round(random.uniform(65, 78), 1)
+    vibration = round(random.uniform(2.5, 4.5), 2)
+    current = round(random.uniform(1.8, 2.8), 2)
 
-    health = 100
-
-    if temperature > 72:
-        health -= 20
-
-    if vibration > 3.5:
-        health -= 20
-
-    if current > 2.4:
-        health -= 15
-
-    health = max(40, health)
-
-    if health >= 80:
-        status = "Normal"
-        fault = "No fault detected"
-
-    elif health >= 60:
-        status = "Warning"
-        fault = "Abnormal sensor condition"
-
-    else:
-        status = "Critical"
-        fault = "Possible machine fault"
+    result = detect_fault(
+        temperature,
+        vibration,
+        current
+    )
 
     return {
         "timestamp": datetime.now().isoformat(),
         "temperature": temperature,
         "vibration": vibration,
         "current": current,
-        "health": health,
-        "status": status,
-        "fault": fault
+        "health": result["health"],
+        "status": result["status"],
+        "fault": result["fault"],
+        "warnings": result["warnings"],
+        "faults": result["faults"]
     }

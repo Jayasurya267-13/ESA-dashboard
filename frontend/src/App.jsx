@@ -89,7 +89,7 @@ function App() {
 
             <main className="main-content">
 
-                <Header />
+                <Header connectionStatus={connectionStatus} />
 
                 <div className="dashboard-content">
 
