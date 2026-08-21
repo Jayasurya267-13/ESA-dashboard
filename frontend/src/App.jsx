@@ -13,6 +13,7 @@ import "./App.css";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import MetricCard from "./components/MetricCard";
+import SensorChart from "./components/SensorChart";
 
 function App() {
 
@@ -20,6 +21,7 @@ function App() {
     const [vibration, setVibration] = useState(3.21);
     const [current, setCurrent] = useState(2.13);
     const [health, setHealth] = useState(91);
+    const [sensorHistory, setSensorHistory] = useState([]);
 
     const [connectionStatus, setConnectionStatus] = useState("Connected");
     const [lastUpdated, setLastUpdated] = useState("--");
@@ -56,6 +58,20 @@ function App() {
 
             setMachineStatus(data.status);
             setFaultMessage(data.fault);
+
+            setSensorHistory((previous) => {
+
+                const newReading = {
+                    time: new Date(data.timestamp).toLocaleTimeString(),
+                    temperature: data.temperature,
+                    vibration: data.vibration,
+                    current: data.current
+                };
+
+                const updated = [...previous, newReading];
+
+                return updated.slice(-20);
+            });
 
         } catch (error) {
 
@@ -214,6 +230,8 @@ function App() {
                                 <p>Live monitoring simulation</p>
                             </div>
                         </div>
+                        
+                        <SensorChart data={sensorHistory} />
 
                         <div className="trend-placeholder">
 
