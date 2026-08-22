@@ -4,6 +4,7 @@ from datetime import datetime
 import random
 
 from services.fault_detection import detect_fault
+from prediction import predict_machine_health
 
 app = FastAPI(
     title="ESA Predictive Maintenance API",
@@ -53,4 +54,26 @@ def get_sensor_data():
         "fault": result["fault"],
         "warnings": result["warnings"],
         "faults": result["faults"]
+    }
+    
+@app.get("/api/ai-prediction")
+def get_ai_prediction():
+
+    temperature = round(random.uniform(65, 80), 1)
+    vibration = round(random.uniform(2.0, 5.0), 2)
+    current = round(random.uniform(1.5, 3.5), 2)
+
+    prediction = predict_machine_health(
+        temperature,
+        vibration,
+        current
+    )
+
+    return {
+        "timestamp": datetime.now().isoformat(),
+        "temperature": temperature,
+        "vibration": vibration,
+        "current": current,
+        "health": prediction["health"],
+        "status": prediction["status"]
     }

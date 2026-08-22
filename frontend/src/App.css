@@ -419,3 +419,26 @@
     color: #7b8494;
     margin-top: 8px;
 }
+.ai-prediction-card {
+    background: white;
+    border: 1px solid #d9dee7;
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.ai-health-value {
+    font-size: 42px;
+    font-weight: 700;
+    margin: 10px 0;
+}
+
+.ai-prediction-message {
+    max-width: 400px;
+    padding: 18px;
+    border-radius: 10px;
+    background: #f5f7fa;
+}

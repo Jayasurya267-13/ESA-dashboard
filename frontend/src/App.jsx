@@ -22,6 +22,10 @@ function App() {
     const [current, setCurrent] = useState(2.13);
     const [health, setHealth] = useState(91);
     const [sensorHistory, setSensorHistory] = useState([]);
+    const [aiPrediction, setAiPrediction] = useState({
+        health: 0,
+        status: "Loading..."
+    });
 
     const [connectionStatus, setConnectionStatus] = useState("Connected");
     const [lastUpdated, setLastUpdated] = useState("--");
@@ -56,8 +60,31 @@ function App() {
             setCurrent(data.current);
             setHealth(data.health);
 
+            const predictionResponse = await fetch(
+                "http://127.0.0.1:8000/api/ai-prediction"
+            );
+
+            const predictionData = await predictionResponse.json();
+
+            setAiPrediction({
+                health: predictionData.health,
+                status: predictionData.status
+            });
+
             setMachineStatus(data.status);
             setFaultMessage(data.fault);
+            const aiResponse = await fetch(
+                "http://127.0.0.1:8000/api/ai-prediction"
+            );
+
+            if (aiResponse.ok) {
+                const aiData = await aiResponse.json();
+
+                setAiPrediction({
+                    health: aiData.health,
+                    status: aiData.status
+                });
+            }
 
             setSensorHistory((previous) => {
 
@@ -231,6 +258,7 @@ function App() {
                             </div>
                         </div>
                         
+                        
                         <SensorChart data={sensorHistory} />
 
                         <div className="trend-placeholder">
@@ -248,6 +276,55 @@ function App() {
                             <div className="trend-line">
                                 <span>Current</span>
                                 <strong>{current} A</strong>
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                    <section className="dashboard-section">
+                        <div className="section-header">
+                            <div>
+                                <h2>AI Prediction</h2>
+                                <p>Machine health prediction</p>
+                            </div>
+                        </div>
+
+                        <div className="ai-prediction-card">
+
+                            <div>
+                                <h3>Predicted Machine Health</h3>
+
+                                <div className="ai-health-value">
+                                    {aiPrediction.health}%
+                                </div>
+
+                                <p>
+                                    Prediction Status:
+                                    <strong> {aiPrediction.status}</strong>
+                                </p>
+                            </div>
+
+                            <div className="ai-prediction-message">
+
+                                {aiPrediction.status === "Healthy" && (
+                                    <p>
+                                        Machine condition is currently healthy.
+                                    </p>
+                                )}
+
+                                {aiPrediction.status === "Warning" && (
+                                    <p>
+                                        Machine requires attention. Monitor sensor conditions.
+                                    </p>
+                                )}
+
+                                {aiPrediction.status === "Critical" && (
+                                    <p>
+                                        Critical condition detected. Maintenance is recommended.
+                                    </p>
+                                )}
+
                             </div>
 
                         </div>
