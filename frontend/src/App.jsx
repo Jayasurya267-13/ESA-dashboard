@@ -32,6 +32,16 @@ function App() {
 
     const [machineStatus, setMachineStatus] = useState("Normal");
     const [faultMessage, setFaultMessage] = useState("No fault detected");
+    const [faultExplanation, setFaultExplanation] = useState("");
+    const [recommendedAction, setRecommendedAction] = useState("");
+    const [chatInput, setChatInput] = useState("");
+
+    const [chatMessages, setChatMessages] = useState([
+        {
+            sender: "bot",
+            text: "Hello! I am your maintenance assistant. Ask me about the current machine condition, fault, or recommended action."
+        }
+    ]);
 
     useEffect(() => {
 
@@ -73,6 +83,9 @@ function App() {
 
             setMachineStatus(data.status);
             setFaultMessage(data.fault);
+            setFaultExplanation(data.fault_explanation);
+            setRecommendedAction(data.recommended_action);
+
             const aiResponse = await fetch(
                 "http://127.0.0.1:8000/api/ai-prediction"
             );
@@ -123,7 +136,131 @@ function App() {
 
     return () => clearInterval(interval);
 
-}, []);
+    }, []);
+
+    const handleChat = async () => {
+
+        if (!chatInput.trim()) {
+            return;
+        }
+
+        const question = chatInput.trim();
+
+        // Add user message
+        setChatMessages(prev => [
+            ...prev,
+            {
+                sender: "user",
+                text: question
+            }
+        ]);
+
+        // Clear input
+        setChatInput("");
+
+        try {
+
+            const response = await fetch(
+                "http://127.0.0.1:8000/api/chat",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        question: question
+                    })
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Chat API request failed");
+            }
+
+            const data = await response.json();
+
+            // Add backend answer
+            setChatMessages(prev => [
+                ...prev,
+                {
+                    sender: "bot",
+                    text: data.answer
+                }
+            ]);
+
+        } catch (error) {
+
+            console.error("Chatbot error:", error);
+
+            setChatMessages(prev => [
+                ...prev,
+                {
+                    sender: "bot",
+                    text: "Unable to connect to the maintenance server. Please check that the backend is running."
+                }
+            ]);
+        }
+    };
+    
+    const handleBackendChat = async () => {
+        if (!chatInput.trim()) {
+            return;
+        }
+
+        const question = chatInput;
+
+        // Show user's message immediately
+        setChatMessages([
+            ...chatMessages,
+            {
+                sender: "user",
+                text: question
+            }
+        ]);
+
+        setChatInput("");
+
+        try {
+            const response = await fetch(
+                `http://127.0.0.1:8000/api/chat`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        question: question
+                    })
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Chat API failed");
+            }
+
+            const data = await response.json();
+
+            setChatMessages(prev => [
+                ...prev,
+                {
+                    sender: "bot",
+                    text: data.answer
+                }
+            ]);
+
+        } catch (error) {
+
+            setChatMessages(prev => [
+                ...prev,
+                {
+                    sender: "bot",
+                    text: "Unable to connect to the AI backend. Please check that the backend server is running."
+                }
+            ]);
+
+            console.error("Chat error:", error);
+        }
+    };
 
     return (
         <div className="app">
@@ -245,6 +382,19 @@ function App() {
                             </div>
 
                         </div>
+                        <div className="fault-details">
+
+                            <div className="fault-detail-card">
+                                <h3>What is happening?</h3>
+                                <p>{faultExplanation}</p>
+                            </div>
+
+                            <div className="fault-detail-card">
+                                <h3>Recommended Action</h3>
+                                <p>{recommendedAction}</p>
+                            </div>
+
+                        </div>
 
                     </section>
 
@@ -324,6 +474,66 @@ function App() {
                                         Critical condition detected. Maintenance is recommended.
                                     </p>
                                 )}
+
+                            </div>
+
+                        </div>
+
+                    </section>
+                    <section className="dashboard-section">
+
+                        <div className="section-header">
+                            <div>
+                                <h2>Maintenance Assistant</h2>
+                                <p>Ask about the current machine condition</p>
+                            </div>
+                        </div>
+
+                        <div className="chatbot-container">
+
+                            <div className="chatbot-messages">
+
+                                {chatMessages.map((message, index) => (
+
+                                    <div
+                                        key={index}
+                                        className={`chat-message ${message.sender}`}
+                                    >
+
+                                        <div className="chat-message-label">
+                                            {message.sender === "bot"
+                                                ? "Maintenance Assistant"
+                                                : "You"
+                                            }
+                                        </div>
+
+                                        <div className="chat-message-text">
+                                            {message.text}
+                                        </div>
+
+                                    </div>
+
+                                ))}
+
+                            </div>
+
+                            <div className="chatbot-input-area">
+
+                                <input
+                                    type="text"
+                                    value={chatInput}
+                                    onChange={(e) => setChatInput(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            handleChat();
+                                        }
+                                    }}
+                                    placeholder="Ask about the machine..."
+                                />
+
+                                <button onClick={handleBackendChat}>
+                                    Send
+                                </button>
 
                             </div>
 
