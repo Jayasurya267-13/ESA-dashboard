@@ -507,7 +507,10 @@ function App() {
                                             }
                                         </div>
 
-                                        <div className="chat-message-text">
+                                        <div
+                                            className="chat-message-text"
+                                            style={{ whiteSpace: "pre-line" }}
+                                        >
                                             {message.text}
                                         </div>
 

@@ -129,9 +129,102 @@ def maintenance_chat(request: ChatRequest):
     fault = sensor_response["fault"]
     explanation = sensor_response["fault_explanation"]
     action = sensor_response["recommended_action"]
+    
+    # Maintenance diagnosis
+    if fault == "Elevated vibration":
+
+        probable_cause = (
+            "Possible bearing wear, shaft misalignment, "
+            "mechanical imbalance, or loose mounting."
+        )
+
+        machine_risk = (
+            "Continued high vibration may cause mechanical "
+            "wear and reduce machine reliability."
+        )
+
+    elif fault == "High temperature":
+
+        probable_cause = (
+            "Possible overheating, insufficient cooling, "
+            "excessive load, or lubrication problems."
+        )
+
+        machine_risk = (
+            "Continued overheating may damage machine "
+            "components and reduce operating life."
+        )
+
+    elif fault == "High current":
+
+        probable_cause = (
+            "Possible excessive load, motor stress, "
+            "electrical abnormality, or mechanical resistance."
+        )
+
+        machine_risk = (
+            "Continued high current may cause motor "
+            "overheating or electrical damage."
+        )
+
+    elif fault == "Multiple abnormalities":
+
+        probable_cause = (
+            "Multiple sensor readings are outside the "
+            "expected operating range."
+        )
+
+        machine_risk = (
+            "The machine may be experiencing a serious "
+            "operating abnormality and requires inspection."
+        )
+
+    else:
+
+        probable_cause = (
+            "No significant abnormality has been detected."
+        )
+
+        machine_risk = (
+            "Current machine condition appears normal."
+        )
+    
+    # Safety / Continue Running
+    if (
+        "safe" in question
+        or "continue" in question
+        or "run" in question
+        or "running" in question
+    ):
+
+        if status == "Critical":
+
+            answer = (
+                f"The machine is currently in a Critical condition. "
+                f"Continued operation should be avoided until the fault is inspected. "
+                f"Current fault: {fault}. "
+                f"Recommended action: {action}"
+            )
+
+        elif status == "Warning":
+
+            answer = (
+                f"The machine is currently in a Warning condition. "
+                f"It can be monitored, but the identified fault should be inspected. "
+                f"Current fault: {fault}. "
+                f"Recommended action: {action}"
+            )
+
+        else:
+
+            answer = (
+                f"The machine is currently Normal. "
+                f"It is safe to continue normal operation with regular monitoring."
+            )
+
 
     # Machine condition
-    if (
+    elif (
         "condition" in question
         or "status" in question
         or "machine" in question
@@ -151,13 +244,24 @@ def maintenance_chat(request: ChatRequest):
         "fault" in question
         or "problem" in question
         or "wrong" in question
+        or "why" in question
+        or "cause" in question
+        or "causing" in question
+        or "vibrating" in question
+        or "vibration" in question
+        or "check first" in question
     ):
 
         answer = (
-            f"Current fault: {fault}. "
-            f"{explanation}"
+            f"Detected fault: {fault}\n\n"
+            f"Probable cause:\n"
+            f"{probable_cause}\n\n"
+            f"Risk:\n"
+            f"{machine_risk}\n\n"
+            f"Recommended action:\n"
+            f"{action}"
         )
-
+        
     # Maintenance
     elif (
         "solution" in question
@@ -168,7 +272,9 @@ def maintenance_chat(request: ChatRequest):
     ):
 
         answer = (
-            f"Recommended maintenance action: {action}"
+            f"Detected fault: {fault}\n\n"
+            f"Recommended maintenance action: {action}\n\n"
+            f"Probable cause: {probable_cause}\n"
         )
 
     # Health
