@@ -137,70 +137,6 @@ function App() {
     return () => clearInterval(interval);
 
     }, []);
-
-    const handleChat = async () => {
-
-        if (!chatInput.trim()) {
-            return;
-        }
-
-        const question = chatInput.trim();
-
-        // Add user message
-        setChatMessages(prev => [
-            ...prev,
-            {
-                sender: "user",
-                text: question
-            }
-        ]);
-
-        // Clear input
-        setChatInput("");
-
-        try {
-
-            const response = await fetch(
-                "http://127.0.0.1:8000/api/chat",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        question: question
-                    })
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error("Chat API request failed");
-            }
-
-            const data = await response.json();
-
-            // Add backend answer
-            setChatMessages(prev => [
-                ...prev,
-                {
-                    sender: "bot",
-                    text: data.answer
-                }
-            ]);
-
-        } catch (error) {
-
-            console.error("Chatbot error:", error);
-
-            setChatMessages(prev => [
-                ...prev,
-                {
-                    sender: "bot",
-                    text: "Unable to connect to the maintenance server. Please check that the backend is running."
-                }
-            ]);
-        }
-    };
     
     const handleBackendChat = async () => {
         if (!chatInput.trim()) {
@@ -528,7 +464,7 @@ function App() {
                                     onChange={(e) => setChatInput(e.target.value)}
                                     onKeyDown={(e) => {
                                         if (e.key === "Enter") {
-                                            handleChat();
+                                            handleBackendChat();
                                         }
                                     }}
                                     placeholder="Ask about the machine..."

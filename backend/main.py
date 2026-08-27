@@ -130,6 +130,53 @@ def maintenance_chat(request: ChatRequest):
     explanation = sensor_response["fault_explanation"]
     action = sensor_response["recommended_action"]
     
+    # Sensor severity analysis
+    if vibration >= 4:
+        vibration_severity = "High"
+        vibration_message = (
+            "Vibration is above the monitored range and "
+            "may indicate a mechanical problem."
+        )
+    elif vibration >= 3.5:
+        vibration_severity = "Moderate"
+        vibration_message = (
+            "Vibration is elevated and should be monitored closely."
+        )
+    else:
+        vibration_severity = "Normal"
+        vibration_message = (
+            "Vibration is currently within the monitored range."
+        )
+
+    if temperature >= 75:
+        temperature_severity = "High"
+        temperature_message = (
+            "Temperature is high and may indicate overheating "
+            "or excessive machine load."
+        )
+    elif temperature >= 72:
+        temperature_severity = "Moderate"
+        temperature_message = (
+            "Temperature is elevated and should be monitored."
+        )
+    else:
+        temperature_severity = "Normal"
+        temperature_message = (
+            "Temperature is currently within the monitored range."
+        )
+    
+    if current >= 2.4:
+        current_severity = "High"
+        current_message = (
+            "Electrical current is elevated and may indicate "
+            "excessive load or motor stress."
+        )
+    else:
+        current_severity = "Normal"
+        current_message = (
+            "Electrical current is currently within the monitored range."
+        )
+        
     # Maintenance diagnosis
     if fault == "Elevated vibration":
 
@@ -195,73 +242,44 @@ def maintenance_chat(request: ChatRequest):
         or "continue" in question
         or "run" in question
         or "running" in question
+        or "operate" in question
+        or "operation" in question
     ):
 
         if status == "Critical":
 
             answer = (
-                f"The machine is currently in a Critical condition. "
-                f"Continued operation should be avoided until the fault is inspected. "
-                f"Current fault: {fault}. "
-                f"Recommended action: {action}"
+                f"Safety status: NOT SAFE\n\n"
+                f"Machine condition: Critical\n\n"
+                f"Continued operation should be avoided until the fault is inspected.\n\n"
+                f"Detected fault:\n"
+                f"{fault}\n\n"
+                f"Recommended action:\n"
+                f"{action}"
             )
 
         elif status == "Warning":
 
             answer = (
-                f"The machine is currently in a Warning condition. "
-                f"It can be monitored, but the identified fault should be inspected. "
-                f"Current fault: {fault}. "
-                f"Recommended action: {action}"
+                f"Safety status: CAUTION\n\n"
+                f"Machine condition: Warning\n\n"
+                f"The machine may continue operating with close monitoring, "
+                f"but the identified issue should be inspected.\n\n"
+                f"Detected fault:\n"
+                f"{fault}\n\n"
+                f"Recommended action:\n"
+                f"{action}"
             )
 
         else:
 
             answer = (
-                f"The machine is currently Normal. "
-                f"It is safe to continue normal operation with regular monitoring."
+                f"Safety status: SAFE\n\n"
+                f"Machine condition: Normal\n\n"
+                f"The machine can continue normal operation "
+                f"with regular monitoring."
             )
-
-
-    # Machine condition
-    elif (
-        "condition" in question
-        or "status" in question
-        or "machine" in question
-    ):
-
-        answer = (
-            f"Current machine status is {status}. "
-            f"Machine health is {health}%. "
-            f"Temperature is {temperature} °C, "
-            f"vibration is {vibration} mm/s, "
-            f"and current is {current} A. "
-            f"Current fault: {fault}."
-        )
-
-    # Fault
-    elif (
-        "fault" in question
-        or "problem" in question
-        or "wrong" in question
-        or "why" in question
-        or "cause" in question
-        or "causing" in question
-        or "vibrating" in question
-        or "vibration" in question
-        or "check first" in question
-    ):
-
-        answer = (
-            f"Detected fault: {fault}\n\n"
-            f"Probable cause:\n"
-            f"{probable_cause}\n\n"
-            f"Risk:\n"
-            f"{machine_risk}\n\n"
-            f"Recommended action:\n"
-            f"{action}"
-        )
-        
+            
     # Maintenance
     elif (
         "solution" in question
@@ -273,9 +291,85 @@ def maintenance_chat(request: ChatRequest):
 
         answer = (
             f"Detected fault: {fault}\n\n"
-            f"Recommended maintenance action: {action}\n\n"
-            f"Probable cause: {probable_cause}\n"
+            f"Probable cause:\n"
+            f"{explanation}\n\n"
+            f"Risk:\n"
+            f"{'Continued operation may increase machine wear and reduce reliability.' if status != 'Normal' else 'Current machine condition appears normal.'}\n\n"
+            f"Recommended action:\n"
+            f"{action}"
         )
+        
+    # Fault questions
+    elif (
+        "fault" in question
+        or "problem" in question
+        or "wrong" in question
+        or "why is there a fault" in question
+        or "what caused the fault" in question
+        or "check first" in question
+    ):
+
+        answer = (
+            f"Detected fault: {fault}\n\n"
+            f"Probable cause:\n"
+            f"{explanation}\n\n"
+            f"Risk:\n"
+            f"{'Continued operation may increase machine wear and reduce reliability.' if status != 'Normal' else 'Current machine condition appears normal.'}\n\n"
+            f"Recommended action:\n"
+            f"{action}"
+        )
+
+
+
+     # Temperature-specific questions
+    elif (
+        "temperature" in question
+        or "hot" in question
+    ):
+
+        answer = (
+            f"Temperature: {temperature} °C\n\n"
+            f"Severity: {temperature_severity}\n\n"
+            f"Meaning:\n"
+            f"{temperature_message}\n\n"
+            f"Current machine status: {status}\n\n"
+            f"Recommended action:\n"
+            f"{action}"
+        )
+
+    # Vibration-specific questions
+    elif (
+        "vibration" in question
+        or "vibrating" in question
+        or "shake" in question
+    ):
+
+        answer = (
+            f"Vibration: {vibration} mm/s\n\n"
+            f"Severity: {vibration_severity}\n\n"
+            f"Meaning:\n"
+            f"{vibration_message}\n\n"
+            f"Current machine status: {status}\n\n"
+            f"Recommended action:\n"
+            f"{action}"
+        )
+
+    # Current-specific questions
+    elif (
+        "current" in question
+        or "electrical" in question
+    ):
+
+        answer = (
+            f"Electrical current: {current} A\n\n"
+            f"Severity: {current_severity}\n\n"
+            f"Meaning:\n"
+            f"{current_message}\n\n"
+            f"Current machine status: {status}\n\n"
+            f"Recommended action:\n"
+            f"{action}"
+        )
+
 
     # Health
     elif "health" in question:
@@ -284,81 +378,28 @@ def maintenance_chat(request: ChatRequest):
             f"Current machine health is {health}%. "
             f"Machine status is {status}."
         )
-
-    # Temperature
+        
+    # Machine condition
     elif (
-        "temperature" in question
-        or "hot" in question
+        "condition" in question
+        or "status" in question
+    ) and not (
+        "fault" in question
+        or "problem" in question
+        or "why" in question
+        or "cause" in question
+        or "causing" in question
+        or "vibrat" in question
     ):
 
         answer = (
-            f"Current temperature is {temperature} °C."
+            f"Current machine status is {status}. "
+            f"Machine health is {health}%. "
+            f"Temperature is {temperature} °C, "
+            f"vibration is {vibration} mm/s, "
+            f"and current is {current} A. "
+            f"Current fault: {fault}."
         )
-
-    # Vibration
-    elif (
-        "vibration" in question
-        or "shake" in question
-    ):
-
-        answer = (
-            f"Current vibration is {vibration} mm/s. "
-        )
-
-        if vibration >= 4:
-            answer += (
-                "The vibration level is high and "
-                "should be inspected."
-            )
-        else:
-            answer += (
-                "The vibration level is currently "
-                "within the monitored range."
-            )
-
-    # Current
-    elif (
-        "current" in question
-        or "electrical" in question
-    ):
-
-        answer = (
-            f"Current electrical current is {current} A."
-        )
-
-    # Safety
-    elif (
-        "safe" in question
-        or "continue" in question
-        or "run" in question
-    ):
-
-        if status == "Critical":
-
-            answer = (
-                "The machine is currently in a Critical "
-                "condition. Continued operation should "
-                "be avoided until the fault is inspected. "
-                f"Current fault: {fault}. "
-                f"Recommended action: {action}"
-            )
-
-        elif status == "Warning":
-
-            answer = (
-                "The machine is currently in a Warning "
-                "condition. It should be monitored closely. "
-                f"Current fault: {fault}. "
-                f"Recommended action: {action}"
-            )
-
-        else:
-
-            answer = (
-                "The machine is currently Normal. "
-                "Continue normal monitoring and "
-                "preventive maintenance."
-            )
 
     # Greeting
     elif (
@@ -373,12 +414,18 @@ def maintenance_chat(request: ChatRequest):
             "and maintenance actions."
         )
 
+    # Unknown question
     else:
-
         answer = (
-            "I can help with machine condition, health, "
-            "temperature, vibration, current, faults, "
-            "safety, and maintenance recommendations."
+            "I can help you with:\n\n"
+            "• Machine condition\n"
+            "• Machine health\n"
+            "• Temperature\n"
+            "• Vibration\n"
+            "• Electrical current\n"
+            "• Faults and causes\n"
+            "• Safety and operation\n"
+            "• Maintenance recommendations"
         )
 
     return {
