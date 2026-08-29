@@ -4,58 +4,105 @@ import {
     Activity,
     AlertTriangle,
     Brain,
+    MessageCircle,
     Settings
 } from "lucide-react";
 
-function Sidebar() {
+function Sidebar({ activeSection, onNavigate }) {
+
+    const menuItems = [
+        {
+            id: "dashboard",
+            label: "Dashboard",
+            icon: LayoutDashboard
+        },
+        {
+            id: "machines",
+            label: "Machines",
+            icon: Cpu
+        },
+        {
+            id: "sensors",
+            label: "Sensors",
+            icon: Activity
+        },
+        {
+            id: "faults",
+            label: "Fault Detection",
+            icon: AlertTriangle
+        },
+        {
+            id: "predictions",
+            label: "AI Predictions",
+            icon: Brain
+        },
+        {
+            id: "assistant",
+            label: "Maintenance Assistant",
+            icon: MessageCircle
+        }
+    ];
+
     return (
         <aside className="sidebar">
 
+            {/* LOGO */}
             <div className="logo-section">
+
                 <div className="logo-icon">
                     <Cpu size={24} />
                 </div>
 
-                <div>
+                <div className="logo-text">
                     <h2>ESA</h2>
                     <span>Predictive Maintenance</span>
                 </div>
+
             </div>
 
+            {/* NAVIGATION */}
             <nav className="sidebar-nav">
 
-                <div className="nav-item active">
-                    <LayoutDashboard size={20} />
-                    <span>Dashboard</span>
-                </div>
+                {menuItems.map((item) => {
 
-                <div className="nav-item">
-                    <Cpu size={20} />
-                    <span>Machines</span>
-                </div>
+                    const Icon = item.icon;
 
-                <div className="nav-item">
-                    <Activity size={20} />
-                    <span>Sensors</span>
-                </div>
+                    return (
+                        <div
+                            key={item.id}
+                            className={`nav-item ${
+                                activeSection === item.id ? "active" : ""
+                            }`}
+                            onClick={() => onNavigate(item.id)}
+                        >
 
-                <div className="nav-item">
-                    <AlertTriangle size={20} />
-                    <span>Faults</span>
-                </div>
+                            <Icon size={20} />
 
-                <div className="nav-item">
-                    <Brain size={20} />
-                    <span>AI Predictions</span>
-                </div>
+                            <span>{item.label}</span>
+
+                        </div>
+                    );
+
+                })}
 
             </nav>
 
+            {/* SETTINGS */}
             <div className="sidebar-bottom">
-                <div className="nav-item">
+
+                <div
+                    className={`nav-item ${
+                        activeSection === "settings" ? "active" : ""
+                    }`}
+                    onClick={() => onNavigate("settings")}
+                >
+
                     <Settings size={20} />
+
                     <span>Settings</span>
+
                 </div>
+
             </div>
 
         </aside>
