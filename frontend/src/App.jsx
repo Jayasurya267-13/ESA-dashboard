@@ -31,6 +31,34 @@ function App() {
     const [activeSection, setActiveSection] =
         useState("dashboard");
 
+    /* =========================================================
+    MACHINE MANAGEMENT
+    ========================================================= */
+
+    const [selectedMachine, setSelectedMachine] =
+        useState("MTR-001");
+
+    const machines = [
+        {
+            id: "MTR-001",
+            name: "Motor Pump 01",
+            type: "Industrial Motor",
+            location: "Production Line A"
+        },
+        {
+            id: "MTR-002",
+            name: "Motor Pump 02",
+            type: "Industrial Motor",
+            location: "Production Line B"
+        },
+        {
+            id: "MTR-003",
+            name: "Cooling Fan 01",
+            type: "Cooling System",
+            location: "Production Line C"
+        }
+    ];
+
 
     /* =========================================================
        MACHINE DATA
@@ -734,6 +762,122 @@ function App() {
                             </div>
 
                         </div>
+                        <div className="machine-management-card">
+
+                            <div className="machine-management-header">
+
+                                <div>
+
+                                    <div className="section-kicker">
+                                        MACHINE MANAGEMENT
+                                    </div>
+
+                                    <h3>
+                                        Monitored Machine
+                                    </h3>
+
+                                    <p>
+                                        Select and view the currently monitored machine.
+                                    </p>
+
+                                </div>
+
+                                <select
+                                    className="machine-selector"
+                                    value={selectedMachine}
+                                    onChange={(e) =>
+                                        setSelectedMachine(e.target.value)
+                                    }
+                                >
+
+                                    {machines.map((machine) => (
+
+                                        <option
+                                            key={machine.id}
+                                            value={machine.id}
+                                        >
+                                            {machine.name}
+                                        </option>
+
+                                    ))}
+
+                                </select>
+
+                            </div>
+
+
+                            {machines
+                                .filter(
+                                    (machine) =>
+                                        machine.id === selectedMachine
+                                )
+                                .map((machine) => (
+
+                                    <div
+                                        className="machine-information"
+                                        key={machine.id}
+                                    >
+
+                                        <div className="machine-info-item">
+
+                                            <span>
+                                                Machine ID
+                                            </span>
+
+                                            <strong>
+                                                {machine.id}
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div className="machine-info-item">
+
+                                            <span>
+                                                Machine Type
+                                            </span>
+
+                                            <strong>
+                                                {machine.type}
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div className="machine-info-item">
+
+                                            <span>
+                                                Location
+                                            </span>
+
+                                            <strong>
+                                                {machine.location}
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div className="machine-info-item">
+
+                                            <span>
+                                                Current Status
+                                            </span>
+
+                                            <strong
+                                                className={`machine-status-text ${getStatusClass(
+                                                    machineStatus
+                                                )}`}
+                                            >
+                                                {machineStatus}
+                                            </strong>
+
+                                        </div>
+
+                                    </div>
+
+                                ))}
+
+                        </div>  
 
 
                         <div className="metrics-grid">

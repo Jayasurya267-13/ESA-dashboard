@@ -2226,3 +2226,138 @@ select:focus-visible {
         transition-duration: 0.01ms !important;
     }
 }
+/* =========================================================
+   MACHINE MANAGEMENT
+========================================================= */
+
+.machine-management-card {
+    margin-bottom: 20px;
+
+    padding: 22px;
+
+    border-radius: 16px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(7, 28, 57, 0.98),
+            rgba(3, 16, 36, 0.98)
+        );
+
+    border:
+        1px solid rgba(65, 120, 190, 0.22);
+
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.25);
+}
+
+.machine-management-card:hover {
+    border-color:
+        rgba(96, 165, 250, 0.30);
+}
+
+.machine-management-header {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 20px;
+}
+
+.machine-management-header h3 {
+    margin: 5px 0 5px;
+
+    color: white;
+
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.machine-management-header p {
+    margin: 0;
+
+    color: #8197b6;
+
+    font-size: 12px;
+}
+
+.machine-information {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 12px;
+}
+
+.machine-info-item {
+    padding: 15px;
+
+    border-radius: 11px;
+
+    background:
+        rgba(15, 35, 62, 0.70);
+
+    border:
+        1px solid rgba(96, 165, 250, 0.12);
+}
+
+.machine-info-item span {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #8197b6;
+
+    font-size: 11px;
+}
+
+.machine-info-item strong {
+    color: #e5efff;
+
+    font-size: 14px;
+
+    font-weight: 650;
+}
+
+.machine-status-text.normal {
+    color: #4ade80;
+}
+
+.machine-status-text.warning {
+    color: #fbbf24;
+}
+
+.machine-status-text.critical {
+    color: #f87171;
+}
+
+@media (max-width: 850px) {
+
+    .machine-information {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .machine-management-header {
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+
+    .machine-selector {
+        width: 100%;
+    }
+
+    .machine-information {
+        grid-template-columns: 1fr;
+    }
+
+}
