@@ -1,3 +1,182 @@
+import random
+import time
+import math
+
+# =========================================================
+# REALISTIC MACHINE SENSOR SIMULATION
+# =========================================================
+
+simulation_start_time = time.time()
+
+sensor_state = {
+    "temperature": 68.0,
+    "vibration": 2.8,
+    "current": 2.2,
+    "health": 95.0
+}
+
+def generate_sensor_data():
+    """
+    Generate realistic industrial machine sensor data.
+
+    The values change gradually instead of jumping randomly.
+    This makes the simulation closer to a real sensor system.
+    """
+
+    elapsed = time.time() - simulation_start_time
+
+    # -----------------------------------------------------
+    # NORMAL OPERATING VALUES
+    # -----------------------------------------------------
+
+    base_temperature = 68.0
+    base_vibration = 2.8
+    base_current = 2.2
+
+    # -----------------------------------------------------
+    # SMALL REALISTIC SENSOR VARIATIONS
+    # -----------------------------------------------------
+
+    temperature_noise = random.uniform(-0.8, 0.8)
+    vibration_noise = random.uniform(-0.25, 0.25)
+    current_noise = random.uniform(-0.12, 0.12)
+
+    # -----------------------------------------------------
+    # SLOW NATURAL MACHINE VARIATION
+    # -----------------------------------------------------
+
+    temperature_wave = math.sin(elapsed / 20) * 2.0
+    vibration_wave = math.sin(elapsed / 8) * 0.35
+    current_wave = math.sin(elapsed / 15) * 0.15
+
+    # -----------------------------------------------------
+    # UPDATE SENSOR VALUES
+    # -----------------------------------------------------
+
+    sensor_state["temperature"] = (
+        base_temperature
+        + temperature_wave
+        + temperature_noise
+    )
+
+    sensor_state["vibration"] = (
+        base_vibration
+        + vibration_wave
+        + vibration_noise
+    )
+
+    sensor_state["current"] = (
+        base_current
+        + current_wave
+        + current_noise
+    )
+
+    # -----------------------------------------------------
+    # LIMIT VALUES TO REALISTIC RANGE
+    # -----------------------------------------------------
+
+    sensor_state["temperature"] = max(
+        50,
+        min(sensor_state["temperature"], 100)
+    )
+
+    sensor_state["vibration"] = max(
+        0.5,
+        min(sensor_state["vibration"], 10)
+    )
+
+    sensor_state["current"] = max(
+        1.0,
+        min(sensor_state["current"], 5.0)
+    )
+
+    # -----------------------------------------------------
+    # MACHINE HEALTH
+    # -----------------------------------------------------
+
+    temperature_penalty = max(
+        0,
+        sensor_state["temperature"] - 70
+    ) * 1.2
+
+    vibration_penalty = max(
+        0,
+        sensor_state["vibration"] - 3
+    ) * 5
+
+    current_penalty = max(
+        0,
+        sensor_state["current"] - 2.5
+    ) * 4
+
+    total_penalty = (
+        temperature_penalty
+        + vibration_penalty
+        + current_penalty
+    )
+
+    health = 100 - total_penalty
+
+    sensor_state["health"] = max(
+        0,
+        min(health, 100)
+    )
+
+    # -----------------------------------------------------
+    # FAULT DETECTION
+    # -----------------------------------------------------
+
+    faults = []
+
+    if sensor_state["temperature"] > 80:
+        faults.append("High Temperature")
+
+    if sensor_state["vibration"] > 5:
+        faults.append("Excessive Vibration")
+
+    if sensor_state["current"] > 3.5:
+        faults.append("High Current")
+
+    if len(faults) == 0:
+        status = "Normal"
+        fault = "No fault detected"
+
+    elif len(faults) == 1:
+        status = "Warning"
+        fault = faults[0]
+
+    else:
+        status = "Critical"
+        fault = ", ".join(faults)
+
+    # -----------------------------------------------------
+    # RETURN SENSOR DATA
+    # -----------------------------------------------------
+
+    return {
+        "temperature": round(
+            sensor_state["temperature"], 2
+        ),
+
+        "vibration": round(
+            sensor_state["vibration"], 2
+        ),
+
+        "current": round(
+            sensor_state["current"], 2
+        ),
+
+        "health": round(
+            sensor_state["health"], 1
+        ),
+
+        "status": status,
+
+        "fault": fault,
+
+        "timestamp": time.time()
+    }
+    
 from unittest import result
 
 from fastapi import FastAPI
@@ -35,6 +214,8 @@ def root():
 
 @app.get("/api/sensor-data")
 def get_sensor_data():
+    
+    return generate_sensor_data()
 
     temperature = round(random.uniform(65, 78), 1)
     vibration = round(random.uniform(2.5, 4.5), 2)
