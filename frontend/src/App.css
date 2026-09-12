@@ -9,18 +9,18 @@
    ========================================================= */
 
 :root {
-    --bg-main: #020b1d;
-    --bg-main-light: #071a35;
+    --bg-main: #0B1117;
+    --bg-main-light: #121C24;
 
-    --sidebar-bg: #020b1d;
-    --sidebar-bg-2: #041b3d;
+    --sidebar-bg: #0B1117;
+    --sidebar-bg-2: #18242C;
 
     --card-bg: rgba(7, 28, 57, 0.96);
     --card-bg-dark: rgba(3, 16, 36, 0.98);
 
-    --primary: #1688ff;
-    --primary-dark: #1d4ed8;
-    --primary-purple: #5138df;
+    --primary: #00C9A7;
+    --primary-dark: #009F86;
+    --primary-purple: #7C5CFC;
 
     --text-main: #ffffff;
     --text-secondary: #8da2c1;
@@ -82,7 +82,7 @@ body {
             rgba(25, 70, 150, 0.12),
             transparent 35%
         ),
-        #020b1d;
+        #0B1117;
 
     color: var(--text-main);
 
@@ -151,9 +151,9 @@ select:focus-visible {
     background:
         linear-gradient(
             180deg,
-            #020b1d 0%,
+            #0B1117 0%,
             #03132d 55%,
-            #041b3d 100%
+            #18242C 100%
         );
 
     border-right: 1px solid rgba(70, 130, 200, 0.18);
@@ -194,7 +194,7 @@ select:focus-visible {
     background:
         linear-gradient(
             135deg,
-            #1688ff,
+            #00C9A7,
             #263de0
         );
 
@@ -276,7 +276,7 @@ select:focus-visible {
         linear-gradient(
             90deg,
             #087cf5,
-            #5138df
+            #7C5CFC
         );
 
     box-shadow:
@@ -537,7 +537,7 @@ select:focus-visible {
         linear-gradient(
             135deg,
             #020817 0%,
-            #071a35 45%,
+            #121C24 45%,
             #0b2447 100%
         );
 
@@ -2360,4 +2360,452 @@ select:focus-visible {
         grid-template-columns: 1fr;
     }
 
+}
+/* =========================================================
+   FINAL INDUSTRIAL GRAPHITE + TEAL COLOR OVERRIDE
+   ========================================================= */
+
+/* Main application */
+body {
+    background: #0B1117 !important;
+}
+
+.app {
+    background:
+        linear-gradient(
+            135deg,
+            #0B1117 0%,
+            #101A21 100%
+        ) !important;
+}
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.sidebar {
+    background:
+        linear-gradient(
+            180deg,
+            #0B1117 0%,
+            #111A21 55%,
+            #18242C 100%
+        ) !important;
+
+    border-right:
+        1px solid rgba(0, 201, 167, 0.18) !important;
+}
+
+.logo-icon {
+    background:
+        linear-gradient(
+            135deg,
+            #00C9A7,
+            #009F86
+        ) !important;
+
+    box-shadow:
+        0 0 25px rgba(0, 201, 167, 0.25) !important;
+}
+
+.logo-text span {
+    color: #00C9A7 !important;
+}
+
+.nav-item {
+    color: #A7B4C3 !important;
+}
+
+.nav-item:hover {
+    background:
+        rgba(0, 201, 167, 0.10) !important;
+
+    color: #F1F5F9 !important;
+}
+
+.nav-item.active {
+    background:
+        linear-gradient(
+            90deg,
+            #00A98F,
+            #00C9A7
+        ) !important;
+
+    box-shadow:
+        0 8px 25px rgba(0, 201, 167, 0.20) !important;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.header {
+    background:
+        rgba(11, 17, 23, 0.94) !important;
+
+    border-bottom:
+        1px solid rgba(0, 201, 167, 0.15) !important;
+}
+
+.header p {
+    color: #94A3B8 !important;
+}
+
+/* =========================================================
+   MACHINE SELECTOR
+   ========================================================= */
+
+.machine-selector {
+    background: #151F27 !important;
+
+    color: #E2E8F0 !important;
+
+    border:
+        1px solid rgba(0, 201, 167, 0.25) !important;
+}
+
+.machine-selector:hover,
+.machine-selector:focus {
+    border-color: #00C9A7 !important;
+
+    box-shadow:
+        0 0 0 3px rgba(0, 201, 167, 0.10) !important;
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.dashboard-hero {
+    background:
+        linear-gradient(
+            135deg,
+            #0B1117 0%,
+            #151F27 50%,
+            #18242C 100%
+        ) !important;
+
+    border:
+        1px solid rgba(0, 201, 167, 0.22) !important;
+}
+
+/* Remove blue hero glow */
+.dashboard-hero::before {
+    background:
+        radial-gradient(
+            circle,
+            rgba(0, 201, 167, 0.20),
+            transparent 70%
+        ) !important;
+}
+
+.dashboard-hero::after {
+    background:
+        radial-gradient(
+            circle,
+            rgba(0, 201, 167, 0.12),
+            transparent 70%
+        ) !important;
+}
+
+.hero-badge {
+    border-color:
+        rgba(0, 201, 167, 0.30) !important;
+
+    background:
+        rgba(0, 201, 167, 0.10) !important;
+
+    color: #7DE8D3 !important;
+}
+
+.hero-badge svg {
+    color: #00C9A7 !important;
+}
+
+.hero-mini-card:hover {
+    border-color:
+        rgba(0, 201, 167, 0.35) !important;
+}
+
+.hero-mini-icon {
+    background:
+        rgba(0, 201, 167, 0.12) !important;
+
+    color: #00C9A7 !important;
+
+    border-color:
+        rgba(0, 201, 167, 0.20) !important;
+}
+
+.hero-visual-glow {
+    background:
+        radial-gradient(
+            circle,
+            rgba(0, 201, 167, 0.16),
+            rgba(11, 17, 23, 0.60) 55%,
+            rgba(11, 17, 23, 0.20) 70%
+        ) !important;
+
+    border-color:
+        rgba(0, 201, 167, 0.75) !important;
+
+    box-shadow:
+        0 0 0 8px rgba(0, 201, 167, 0.07),
+        0 0 35px rgba(0, 201, 167, 0.20),
+        inset 0 0 30px rgba(0, 201, 167, 0.10) !important;
+}
+
+/* =========================================================
+   SENSOR CARDS
+   ========================================================= */
+
+.metric-card {
+    background:
+        linear-gradient(
+            145deg,
+            #17232B,
+            #10181F
+        ) !important;
+
+    border-color:
+        rgba(0, 201, 167, 0.18) !important;
+}
+
+.metric-card:hover {
+    border-color:
+        rgba(0, 201, 167, 0.45) !important;
+
+    box-shadow:
+        0 18px 40px rgba(0, 201, 167, 0.10) !important;
+}
+
+/* Make all four cards part of the same industrial theme */
+.metric-card:nth-child(1),
+.metric-card:nth-child(2),
+.metric-card:nth-child(3),
+.metric-card:nth-child(4) {
+    background:
+        linear-gradient(
+            145deg,
+            #17232B,
+            #10181F
+        ) !important;
+}
+
+.metric-icon {
+    background:
+        rgba(0, 201, 167, 0.12) !important;
+
+    color: #00C9A7 !important;
+}
+
+/* =========================================================
+   MAIN PANELS
+   ========================================================= */
+
+.panel,
+.machine-management-card {
+    background:
+        linear-gradient(
+            145deg,
+            #17232B,
+            #10181F
+        ) !important;
+
+    border-color:
+        rgba(0, 201, 167, 0.18) !important;
+}
+
+.panel:hover,
+.machine-management-card:hover {
+    border-color:
+        rgba(0, 201, 167, 0.32) !important;
+}
+
+.machine-info-item {
+    background:
+        rgba(21, 31, 39, 0.80) !important;
+
+    border-color:
+        rgba(0, 201, 167, 0.12) !important;
+}
+
+/* =========================================================
+   HEALTH
+   ========================================================= */
+
+.health-circle {
+    border-color: #00C9A7 !important;
+
+    background:
+        radial-gradient(
+            circle,
+            #111A21 58%,
+            #12332F 59%,
+            #111A21 100%
+        ) !important;
+
+    box-shadow:
+        0 0 0 8px rgba(0, 201, 167, 0.07),
+        0 10px 30px rgba(0, 201, 167, 0.12) !important;
+}
+
+/* =========================================================
+   FAULT DETECTION
+   ========================================================= */
+
+.fault-panel {
+    background:
+        linear-gradient(
+            145deg,
+            #172A2A,
+            #101D21
+        ) !important;
+
+    border-color:
+        rgba(0, 201, 167, 0.20) !important;
+}
+
+.fault-icon {
+    background:
+        rgba(0, 201, 167, 0.12) !important;
+
+    color: #00C9A7 !important;
+}
+
+/* =========================================================
+   TREND
+   ========================================================= */
+
+.trend-line {
+    background:
+        rgba(21, 31, 39, 0.90) !important;
+
+    border-color:
+        rgba(0, 201, 167, 0.15) !important;
+}
+
+.trend-line:hover {
+    border-color:
+        rgba(0, 201, 167, 0.30) !important;
+}
+
+/* =========================================================
+   AI PREDICTION
+   ========================================================= */
+
+.ai-prediction-card {
+    background:
+        linear-gradient(
+            135deg,
+            #171D2B,
+            #111720
+        ) !important;
+
+    border-color:
+        rgba(124, 92, 252, 0.25) !important;
+}
+
+.ai-prediction-card:hover {
+    border-color:
+        rgba(124, 92, 252, 0.45) !important;
+}
+
+.ai-health-value {
+    color: #7C5CFC !important;
+}
+
+.ai-prediction-message {
+    background:
+        rgba(124, 92, 252, 0.10) !important;
+
+    border-color:
+        rgba(124, 92, 252, 0.20) !important;
+}
+
+/* =========================================================
+   CHATBOT
+   ========================================================= */
+
+.chatbot-container {
+    background:
+        linear-gradient(
+            145deg,
+            #17232B,
+            #10181F
+        ) !important;
+
+    border-color:
+        rgba(0, 201, 167, 0.18) !important;
+}
+
+.chat-message.bot {
+    background:
+        rgba(24, 42, 45, 0.70) !important;
+
+    border-color:
+        rgba(0, 201, 167, 0.14) !important;
+}
+
+.chat-message.user {
+    background:
+        linear-gradient(
+            135deg,
+            #009F86,
+            #00C9A7
+        ) !important;
+
+    border-color:
+        rgba(0, 201, 167, 0.30) !important;
+}
+
+.chat-message-label {
+    color: #5EEAD4 !important;
+}
+
+.chatbot-input-area input {
+    background: #111A21 !important;
+
+    border-color:
+        rgba(0, 201, 167, 0.20) !important;
+}
+
+.chatbot-input-area input:focus {
+    border-color: #00C9A7 !important;
+
+    box-shadow:
+        0 0 0 3px rgba(0, 201, 167, 0.10) !important;
+}
+
+.chatbot-input-area button {
+    background:
+        linear-gradient(
+            135deg,
+            #009F86,
+            #00C9A7
+        ) !important;
+
+    box-shadow:
+        0 8px 20px rgba(0, 201, 167, 0.18) !important;
+}
+
+.chatbot-input-area button:hover {
+    box-shadow:
+        0 10px 24px rgba(0, 201, 167, 0.28) !important;
+}
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+::-webkit-scrollbar-track {
+    background: #0B1117 !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #34454D !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #00A98F !important;
 }

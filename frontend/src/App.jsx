@@ -24,6 +24,28 @@ import SensorChart from "./components/SensorChart";
 
 function App() {
 
+    const getSensorStatus = (type, value) => {
+        if (type === "temperature") {
+            if (value >= 80) return "Critical";
+            if (value >= 70) return "Warning";
+            return "Normal";
+        }
+
+        if (type === "vibration") {
+            if (value >= 8) return "Critical";
+            if (value >= 5) return "Warning";
+            return "Normal";
+        }
+
+        if (type === "current") {
+            if (value >= 12) return "Critical";
+            if (value >= 10) return "Warning";
+            return "Normal";
+        }
+
+        return "Normal";
+    };
+
     /* =========================================================
        NAVIGATION
     ========================================================= */
