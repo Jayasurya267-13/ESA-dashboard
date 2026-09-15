@@ -1,17 +1,15 @@
-import { useEffect, useState } from "react";
-
+import { useEffect, useState, useCallback } from "react";
 import {
     Thermometer,
     Activity,
     Zap,
     HeartPulse,
-    AlertTriangle,
-    ShieldCheck,
-    Bot,
-    ArrowRight,
     Sparkles,
     Wifi,
-    Gauge
+    WifiOff,
+    Gauge,
+    Cpu,
+    CheckCircle2
 } from "lucide-react";
 
 import "./App.css";
@@ -20,1671 +18,560 @@ import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import MetricCard from "./components/MetricCard";
 import SensorChart from "./components/SensorChart";
+import FaultDetection from "./components/FaultDetection";
+import AIPrediction from "./components/AIPrediction";
+import Chatbot from "./components/Chatbot";
+import SettingsSection from "./components/SettingsSection";
 
+const API_BASE_URL = "http://127.0.0.1:8000";
+
+const DEFAULT_MACHINES = [
+    {
+        id: "MTR-001",
+        name: "Motor Pump 01",
+        type: "Industrial Motor",
+        location: "Production Line A"
+    },
+    {
+        id: "MTR-002",
+        name: "Motor Pump 02",
+        type: "Industrial Motor",
+        location: "Production Line B"
+    },
+    {
+        id: "MTR-003",
+        name: "Cooling Fan 01",
+        type: "Cooling System",
+        location: "Production Line C"
+    }
+];
 
 function App() {
-
-    const getSensorStatus = (type, value) => {
-        if (type === "temperature") {
-            if (value >= 80) return "Critical";
-            if (value >= 70) return "Warning";
-            return "Normal";
-        }
-
-        if (type === "vibration") {
-            if (value >= 8) return "Critical";
-            if (value >= 5) return "Warning";
-            return "Normal";
-        }
-
-        if (type === "current") {
-            if (value >= 12) return "Critical";
-            if (value >= 10) return "Warning";
-            return "Normal";
-        }
-
-        return "Normal";
-    };
+    /* =========================================================
+       NAVIGATION STATE
+    ========================================================= */
+    const [activeSection, setActiveSection] = useState("dashboard");
 
     /* =========================================================
-       NAVIGATION
+       MACHINE MANAGEMENT
     ========================================================= */
-
-    const [activeSection, setActiveSection] =
-        useState("dashboard");
+    const [machines, setMachines] = useState(DEFAULT_MACHINES);
+    const [selectedMachine, setSelectedMachine] = useState("MTR-001");
 
     /* =========================================================
-    MACHINE MANAGEMENT
+       TELEMETRY & SENSOR DATA
     ========================================================= */
+    const [temperature, setTemperature] = useState(66.5);
+    const [vibration, setVibration] = useState(2.8);
+    const [current, setCurrent] = useState(6.5);
+    const [health, setHealth] = useState(100);
+    const [sensorHistory, setSensorHistory] = useState([]);
 
-    const [selectedMachine, setSelectedMachine] =
-        useState("MTR-001");
+    /* =========================================================
+       DIAGNOSTICS & FAULT DATA
+    ========================================================= */
+    const [machineStatus, setMachineStatus] = useState("Normal");
+    const [faultMessage, setFaultMessage] = useState("No fault detected");
+    const [faultExplanation, setFaultExplanation] = useState("");
+    const [recommendedAction, setRecommendedAction] = useState("");
+    const [warnings, setWarnings] = useState([]);
+    const [faults, setFaults] = useState([]);
+    const [dataSource, setDataSource] = useState("simulated");
+    const [simulationMode, setSimulationMode] = useState("normal");
 
-    const machines = [
+    /* =========================================================
+       AI PREDICTION STATE
+    ========================================================= */
+    const [aiPrediction, setAiPrediction] = useState({
+        health: 100,
+        status: "Healthy",
+        risk: "Low",
+        recommendation: "Machine condition is currently stable. Operational parameters within normal tolerances.",
+        anomaly_score: 0.02,
+        estimated_rul_hours: 1000,
+        model_version: "ESA-EdgeAI-v1.2"
+    });
+
+    /* =========================================================
+       SYSTEM & CONNECTION STATUS
+    ========================================================= */
+    const [connectionStatus, setConnectionStatus] = useState("Connecting...");
+    const [lastUpdated, setLastUpdated] = useState("--");
+
+    /* =========================================================
+       CHATBOT STATE
+    ========================================================= */
+    const [isChatLoading, setIsChatLoading] = useState(false);
+    const [chatMessages, setChatMessages] = useState([
         {
-            id: "MTR-001",
-            name: "Motor Pump 01",
-            type: "Industrial Motor",
-            location: "Production Line A"
-        },
-        {
-            id: "MTR-002",
-            name: "Motor Pump 02",
-            type: "Industrial Motor",
-            location: "Production Line B"
-        },
-        {
-            id: "MTR-003",
-            name: "Cooling Fan 01",
-            type: "Cooling System",
-            location: "Production Line C"
+            sender: "bot",
+            text: "Hello! I am your Edge AI maintenance assistant. You can ask me about live machine condition, thermal status, vibration abnormalities, or safety guidelines."
         }
-    ];
-
-
-    /* =========================================================
-       MACHINE DATA
-    ========================================================= */
-
-    const [temperature, setTemperature] =
-        useState(68.4);
-
-    const [vibration, setVibration] =
-        useState(3.21);
-
-    const [current, setCurrent] =
-        useState(2.13);
-
-    const [health, setHealth] =
-        useState(91);
-
-
-    const [sensorHistory, setSensorHistory] =
-        useState([]);
-
+    ]);
 
     /* =========================================================
-       AI PREDICTION
+       FETCH TELEMETRY CYCLE
     ========================================================= */
-
-    const [aiPrediction, setAiPrediction] =
-        useState({
-            health: 0,
-            status: "Loading..."
-        });
-
-
-    /* =========================================================
-       SYSTEM STATUS
-    ========================================================= */
-
-    const [connectionStatus, setConnectionStatus] =
-        useState("Connected");
-
-    const [lastUpdated, setLastUpdated] =
-        useState("--");
-
-    const [machineStatus, setMachineStatus] =
-        useState("Normal");
-
-
-    /* =========================================================
-       FAULT DATA
-    ========================================================= */
-
-    const [faultMessage, setFaultMessage] =
-        useState("No fault detected");
-
-    const [faultExplanation, setFaultExplanation] =
-        useState("");
-
-    const [recommendedAction, setRecommendedAction] =
-        useState("");
-
-
-    /* =========================================================
-       CHATBOT
-    ========================================================= */
-
-    const [chatInput, setChatInput] =
-        useState("");
-
-    const [chatMessages, setChatMessages] =
-        useState([
-            {
-                sender: "bot",
-                text:
-                    "Hello! I am your AI maintenance assistant. Ask me about machine condition, faults, sensor readings, or recommended actions."
-            }
-        ]);
-
-
-    /* =========================================================
-       BACKEND SENSOR DATA
-    ========================================================= */
-
-    useEffect(() => {
-
-        const fetchSensorData = async () => {
-
-            try {
-
-                const response =
-                    await fetch(
-                        "http://127.0.0.1:8000/api/sensor-data"
-                    );
-
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        "Backend request failed"
-                    );
-
-                }
-
-
-                const data =
-                    await response.json();
-
-
-                /* CONNECTION */
-
-                setConnectionStatus(
-                    "Connected"
-                );
-
-
-                /* LAST UPDATED */
-
-                setLastUpdated(
-                    new Date(
-                        data.timestamp
-                    ).toLocaleTimeString()
-                );
-
-
-                /* SENSOR VALUES */
-
-                setTemperature(
-                    data.temperature
-                );
-
-                setVibration(
-                    data.vibration
-                );
-
-                setCurrent(
-                    data.current
-                );
-
-                setHealth(
-                    data.health
-                );
-
-
-                /* MACHINE STATUS */
-
-                setMachineStatus(
-                    data.status
-                );
-
-
-                /* FAULT */
-
-                setFaultMessage(
-                    data.fault
-                );
-
-                setFaultExplanation(
-                    data.fault_explanation
-                );
-
-                setRecommendedAction(
-                    data.recommended_action
-                );
-
-
-                /* =================================================
-                   AI PREDICTION
-                ================================================= */
-
-                const predictionResponse =
-                    await fetch(
-                        "http://127.0.0.1:8000/api/ai-prediction"
-                    );
-
-
-                if (!predictionResponse.ok) {
-
-                    throw new Error(
-                        "AI prediction request failed"
-                    );
-
-                }
-
-
-                const predictionData =
-                    await predictionResponse.json();
-
-
-                setAiPrediction({
-
-                    health:
-                        predictionData.health,
-
-                    status:
-                        predictionData.status
-
-                });
-
-
-                /* =================================================
-                   SENSOR HISTORY
-                ================================================= */
-
-                setSensorHistory(
-                    (previous) => {
-
-                        const newReading = {
-
-                            time:
-                                new Date(
-                                    data.timestamp
-                                ).toLocaleTimeString(),
-
-                            temperature:
-                                data.temperature,
-
-                            vibration:
-                                data.vibration,
-
-                            current:
-                                data.current
-
-                        };
-
-
-                        const updated = [
-
-                            ...previous,
-
-                            newReading
-
-                        ];
-
-
-                        return updated.slice(-20);
-
-                    }
-                );
-
-
-            } catch (error) {
-
-                console.error(
-                    "Unable to connect to backend:",
-                    error
-                );
-
-
-                setConnectionStatus(
-                    "Disconnected"
-                );
-
-            }
-
-        };
-
-
-        fetchSensorData();
-
-
-        const interval =
-            setInterval(
-                fetchSensorData,
-                3000
-            );
-
-
-        return () =>
-            clearInterval(interval);
-
-    }, []);
-
-
-    /* =========================================================
-       CHATBOT BACKEND
-    ========================================================= */
-
-    const handleBackendChat = async (
-        questionOverride = null
-    ) => {
-
-        const question =
-            questionOverride || chatInput;
-
-
-        if (!question.trim()) {
-
-            return;
-
-        }
-
-
-        /* USER MESSAGE */
-
-        setChatMessages(
-            (previous) => [
-
-                ...previous,
-
-                {
-                    sender: "user",
-                    text: question
-                }
-
-            ]
-        );
-
-
-        setChatInput("");
-
-
+    const fetchTelemetry = useCallback(async () => {
         try {
+            const res = await fetch(`${API_BASE_URL}/api/sensor-data?machine_id=${selectedMachine}`);
+            if (!res.ok) {
+                throw new Error(`HTTP error ${res.status}`);
+            }
+            const data = await res.json();
 
-            const response =
-                await fetch(
-                    "http://127.0.0.1:8000/api/chat",
-                    {
-                        method: "POST",
+            setConnectionStatus("Connected");
+            setLastUpdated(new Date().toLocaleTimeString());
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
+            // Telemetry updates
+            setTemperature(data.temperature);
+            setVibration(data.vibration);
+            setCurrent(data.current);
+            setHealth(data.health);
+            setMachineStatus(data.status);
+            setFaultMessage(data.fault);
+            setFaultExplanation(data.fault_explanation);
+            setRecommendedAction(data.recommended_action);
+            setWarnings(data.warnings || []);
+            setFaults(data.faults || []);
+            setDataSource(data.source || "simulated");
+            setSimulationMode(data.simulation_mode || "normal");
 
-                        body:
-                            JSON.stringify({
-                                question:
-                                    question
-                            })
-                    }
-                );
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    "Chat API failed"
-                );
-
+            // Sensor History
+            if (data.history && data.history.length > 0) {
+                setSensorHistory(data.history);
+            } else {
+                setSensorHistory((prev) => {
+                    const sample = {
+                        time: new Date().toLocaleTimeString(),
+                        temperature: data.temperature,
+                        vibration: data.vibration,
+                        current: data.current
+                    };
+                    return [...prev, sample].slice(-20);
+                });
             }
 
-
-            const data =
-                await response.json();
-
-
-            setChatMessages(
-                (previous) => [
-
-                    ...previous,
-
-                    {
-                        sender: "bot",
-                        text:
-                            data.answer
-                    }
-
-                ]
-            );
-
+            // Sync AI prediction if present
+            if (data.ai_prediction) {
+                setAiPrediction(data.ai_prediction);
+            }
 
         } catch (error) {
-
-            console.error(
-                "Chat error:",
-                error
-            );
-
-
-            setChatMessages(
-                (previous) => [
-
-                    ...previous,
-
-                    {
-                        sender: "bot",
-                        text:
-                            "Unable to connect to the AI backend. Please check that the backend server is running."
-                    }
-
-                ]
-            );
-
+            console.error("Telemetry fetch error:", error);
+            setConnectionStatus("Disconnected");
         }
+    }, [selectedMachine]);
 
+    // Initial machine roster load
+    useEffect(() => {
+        const fetchMachines = async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/machines`);
+                if (res.ok) {
+                    const list = await res.json();
+                    if (Array.isArray(list) && list.length > 0) {
+                        setMachines(list);
+                    }
+                }
+            } catch (err) {
+                // Keep default machine roster if offline
+            }
+        };
+        fetchMachines();
+    }, []);
+
+    // Active polling interval (3000ms)
+    useEffect(() => {
+        fetchTelemetry();
+        const interval = setInterval(fetchTelemetry, 3000);
+        return () => clearInterval(interval);
+    }, [fetchTelemetry]);
+
+    /* =========================================================
+       CHATBOT INTERACTION
+    ========================================================= */
+    const handleSendMessage = async (queryText) => {
+        if (!queryText || !queryText.trim()) return;
+
+        // Add user message
+        setChatMessages((prev) => [
+            ...prev,
+            { sender: "user", text: queryText }
+        ]);
+
+        setIsChatLoading(true);
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/chat`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    question: queryText,
+                    machine_id: selectedMachine
+                })
+            });
+
+            if (!res.ok) {
+                throw new Error(`Chat API error: ${res.status}`);
+            }
+
+            const data = await res.json();
+            setChatMessages((prev) => [
+                ...prev,
+                { sender: "bot", text: data.answer }
+            ]);
+
+        } catch (err) {
+            console.error("Chatbot request failed:", err);
+            setChatMessages((prev) => [
+                ...prev,
+                {
+                    sender: "bot",
+                    text: "⚠️ Unable to connect to the AI diagnostic backend. Please verify that the FastAPI backend server is running on port 8000."
+                }
+            ]);
+        } finally {
+            setIsChatLoading(false);
+        }
     };
 
-
     /* =========================================================
-       NAVIGATION
+       SIMULATION / DEMO FAULT TOGGLE
     ========================================================= */
-
-    const handleNavigation =
-        (sectionId) => {
-
-            setActiveSection(
-                sectionId
-            );
-
-
-            const section =
-                document.getElementById(
-                    sectionId
-                );
-
-
-            if (section) {
-
-                section.scrollIntoView({
-
-                    behavior:
-                        "smooth",
-
-                    block:
-                        "start"
-
-                });
-
+    const handleFaultSimulate = async (mode) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/machines/${selectedMachine}/simulate-fault`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ mode })
+            });
+            if (res.ok) {
+                setSimulationMode(mode);
+                // Immediately refresh telemetry
+                await fetchTelemetry();
             }
-
-        };
-
-
-    /* =========================================================
-       QUICK QUESTIONS
-    ========================================================= */
-
-    const quickQuestions = [
-
-        "What is the current machine status?",
-
-        "Why is vibration high?",
-
-        "What should I do for maintenance?",
-
-        "Is the machine safe to operate?"
-
-    ];
-
+        } catch (err) {
+            console.error("Simulation mode toggle failed:", err);
+            throw err;
+        }
+    };
 
     /* =========================================================
-       STATUS HELPER
+       NAVIGATION SCROLL HANDLER
     ========================================================= */
-
-    const getStatusClass =
-        (status) => {
-
-            if (!status) {
-
-                return "normal";
-
-            }
-
-
-            return status
-                .toLowerCase()
-                .replace(/\s+/g, "-");
-
-        };
-
+    const handleNavigation = (sectionId) => {
+        setActiveSection(sectionId);
+        const element = document.getElementById(sectionId);
+        if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    };
 
     /* =========================================================
-       UI
+       HELPERS
     ========================================================= */
+    const getStatusClass = (status) => {
+        if (!status) return "normal";
+        return status.toLowerCase().replace(/\s+/g, "-");
+    };
+
+    const activeMachineObj = machines.find((m) => m.id === selectedMachine) || machines[0];
+
+    // Dynamic sensor threshold indicators
+    const getTempStatus = (val) => (val >= 80 ? "Critical" : val >= 70 ? "Warning" : "Normal");
+    const getVibStatus = (val) => (val >= 8 ? "Critical" : val >= 5 ? "Warning" : "Normal");
+    const getCurrStatus = (val) => (val >= 12 ? "Critical" : val >= 10 ? "Warning" : "Normal");
 
     return (
-
         <div className="app">
-
-
-            {/* =================================================
-                SIDEBAR
-            ================================================= */}
-
+            {/* SIDEBAR */}
             <Sidebar
-
-                activeSection={
-                    activeSection
-                }
-
-                onNavigate={
-                    handleNavigation
-                }
-
+                activeSection={activeSection}
+                onNavigate={handleNavigation}
             />
 
-
-            {/* =================================================
-                MAIN CONTENT
-            ================================================= */}
-
+            {/* MAIN VIEW */}
             <main className="main-content">
-
-
-                {/* =================================================
-                    HEADER
-                ================================================= */}
-
+                {/* HEADER */}
                 <Header
-
-                    connectionStatus={
-                        connectionStatus
-                    }
-
+                    connectionStatus={connectionStatus}
+                    activeMachineName={activeMachineObj.name}
                 />
 
+                {/* DASHBOARD CONTENT BODY */}
+                <div id="dashboard" className="dashboard-content">
 
-                {/* =================================================
-                    DASHBOARD CONTENT
-                ================================================= */}
+                    {/* HERO SECTION */}
+                    <section className="dashboard-hero">
+                        <div className="hero-background"></div>
+                        <div className="hero-overlay"></div>
 
-                <div
-                    id="dashboard"
-                    className="dashboard-content"
-                >
-
-
-                {/* ================================================= 
-                                    HERO SECTION 
-                ================================================= */}
-
-                <section className="dashboard-hero">
-
-                    {/* HERO BACKGROUND IMAGE */}
-                    <div className="hero-background"></div>
-
-                    {/* HERO OVERLAY */}
-                    <div className="hero-overlay"></div>
-
-                    <div className="hero-content">
-
-                        {/* HERO LEFT */}
-                        <div className="hero-main">
-
-                            <div className="hero-badge">
-                                <Sparkles size={15} />
-
-                                <span>
-                                    EDGE AI MONITORING
-                                </span>
-                            </div>
-
-                            <h1>
-                                Welcome back, Admin! 👋
-                            </h1>
-
-                            <p>
-                                Monitor your machines in real-time and predict
-                                potential failures before they happen.
-                            </p>
-
-                            <div className="hero-stats">
-
-                                <div className="hero-mini-card">
-
-                                    <div className="hero-mini-icon">
-                                        <HeartPulse size={20} />
-                                    </div>
-
-                                    <div>
-                                        <span>
-                                            Machine Status
-                                        </span>
-
-                                        <strong>
-                                            {machineStatus.toUpperCase()}
-                                        </strong>
-                                    </div>
-
+                        <div className="hero-content">
+                            <div className="hero-main">
+                                <div className="hero-badge">
+                                    <Sparkles size={15} />
+                                    <span>EDGE AI MONITORING SYSTEM</span>
                                 </div>
 
-                                <div className="hero-mini-card">
-
-                                    <div className="hero-mini-icon">
-                                        <Wifi size={20} />
-                                    </div>
-
-                                    <div>
-                                        <span>
-                                            Connection
-                                        </span>
-
-                                        <strong>
-                                            {connectionStatus.toUpperCase()}
-                                        </strong>
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-                        {/* HERO RIGHT */}
-                        <div className="hero-visual">
-
-                            <div className="hero-visual-glow">
-
-                                <Gauge
-                                    size={95}
-                                    strokeWidth={1.2}
-                                />
-
-                            </div>
-
-                            <div className="hero-visual-text">
-
-                                <span>
-                                    MACHINE HEALTH
-                                </span>
-
-                                <strong>
-                                    {health}%
-                                </strong>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-                    {/* =================================================
-                        SYSTEM STATUS
-                    ================================================= */}
-
-                    <div className="status-row">
-
-
-                        <div
-                            className={`system-status ${getStatusClass(
-                                machineStatus
-                            )}`}
-                        >
-
-                            <span className="status-dot"></span>
-
-                            <span>
-                                System: {machineStatus}
-                            </span>
-
-                        </div>
-
-
-                        <div
-                            className={`connection-status ${getStatusClass(
-                                connectionStatus
-                            )}`}
-                        >
-
-                            <span className="status-dot"></span>
-
-                            <span>
-                                Backend: {connectionStatus}
-                            </span>
-
-                        </div>
-
-
-                        <div className="last-updated">
-
-                            Last updated:
-                            {" "}
-                            {lastUpdated}
-
-                        </div>
-
-
-                    </div>
-
-
-                    {/* =================================================
-                        MACHINE OVERVIEW
-                    ================================================= */}
-
-                    <section
-                        id="machines"
-                        className="dashboard-section"
-                    >
-
-
-                        <div className="section-header">
-
-                            <div>
-
-                                <div className="section-kicker">
-                                    MACHINE MONITORING
-                                </div>
-
-                                <h2>
-                                    Machine Overview
-                                </h2>
-
+                                <h1>ESA Maintenance Dashboard</h1>
                                 <p>
-                                    Live simulated sensor readings
-                                    from the monitored machine.
+                                    Real-time industrial sensor telemetry, AI degradation forecasting,
+                                    and predictive failure detection for high-reliability machinery.
                                 </p>
 
-                            </div>
-
-                        </div>
-                        <div className="machine-management-card">
-
-                            <div className="machine-management-header">
-
-                                <div>
-
-                                    <div className="section-kicker">
-                                        MACHINE MANAGEMENT
+                                <div className="hero-stats">
+                                    <div className="hero-mini-card">
+                                        <div className="hero-mini-icon">
+                                            <HeartPulse size={20} />
+                                        </div>
+                                        <div>
+                                            <span>Machine Condition</span>
+                                            <strong className={`status-${getStatusClass(machineStatus)}`}>
+                                                {machineStatus.toUpperCase()}
+                                            </strong>
+                                        </div>
                                     </div>
 
-                                    <h3>
-                                        Monitored Machine
-                                    </h3>
+                                    <div className="hero-mini-card">
+                                        <div className="hero-mini-icon">
+                                            {connectionStatus === "Connected" ? (
+                                                <Wifi size={20} />
+                                            ) : (
+                                                <WifiOff size={20} color="#EF4444" />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <span>Backend Connection</span>
+                                            <strong style={{ color: connectionStatus === "Connected" ? "#22C55E" : "#EF4444" }}>
+                                                {connectionStatus.toUpperCase()}
+                                            </strong>
+                                        </div>
+                                    </div>
 
-                                    <p>
-                                        Select and view the currently monitored machine.
-                                    </p>
+                                    <div className="hero-mini-card">
+                                        <div className="hero-mini-icon">
+                                            <Cpu size={20} />
+                                        </div>
+                                        <div>
+                                            <span>Data Stream</span>
+                                            <strong style={{ color: "#00C9A7" }}>
+                                                {dataSource.toUpperCase()}
+                                            </strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
+                            <div className="hero-visual">
+                                <div className={`hero-visual-glow glow-${getStatusClass(machineStatus)}`}>
+                                    <Gauge size={95} strokeWidth={1.2} />
+                                </div>
+                                <div className="hero-visual-text">
+                                    <span>OVERALL HEALTH</span>
+                                    <strong>{health}%</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* STATUS BAR */}
+                    <div className="status-row">
+                        <div className={`system-status ${getStatusClass(machineStatus)}`}>
+                            <span className="status-dot"></span>
+                            <span>System Status: {machineStatus}</span>
+                        </div>
+
+                        <div className={`connection-status ${getStatusClass(connectionStatus)}`}>
+                            <span className="status-dot"></span>
+                            <span>Backend: {connectionStatus}</span>
+                        </div>
+
+                        <div className="last-updated">
+                            Last Telemetry Sync: {lastUpdated}
+                        </div>
+                    </div>
+
+                    {/* MACHINE OVERVIEW / MANAGEMENT */}
+                    <section id="machines" className="dashboard-section">
+                        <div className="section-header">
+                            <div>
+                                <div className="section-kicker">FLEET ASSETS</div>
+                                <h2>Machine Overview & Selection</h2>
+                                <p>Select monitored industrial machinery to inspect active telemetry and status.</p>
+                            </div>
+                        </div>
+
+                        <div className="machine-management-card">
+                            <div className="machine-management-header">
+                                <div>
+                                    <div className="section-kicker">MONITORED ASSET</div>
+                                    <h3>{activeMachineObj.name}</h3>
+                                    <p>Select asset to dynamically load sensor streams and AI diagnostics.</p>
                                 </div>
 
                                 <select
                                     className="machine-selector"
                                     value={selectedMachine}
-                                    onChange={(e) =>
-                                        setSelectedMachine(e.target.value)
-                                    }
+                                    onChange={(e) => setSelectedMachine(e.target.value)}
+                                    aria-label="Select Machine"
                                 >
-
-                                    {machines.map((machine) => (
-
-                                        <option
-                                            key={machine.id}
-                                            value={machine.id}
-                                        >
-                                            {machine.name}
+                                    {machines.map((m) => (
+                                        <option key={m.id} value={m.id}>
+                                            {m.id} - {m.name}
                                         </option>
-
                                     ))}
-
                                 </select>
-
                             </div>
 
-
-                            {machines
-                                .filter(
-                                    (machine) =>
-                                        machine.id === selectedMachine
-                                )
-                                .map((machine) => (
-
-                                    <div
-                                        className="machine-information"
-                                        key={machine.id}
-                                    >
-
-                                        <div className="machine-info-item">
-
-                                            <span>
-                                                Machine ID
-                                            </span>
-
-                                            <strong>
-                                                {machine.id}
-                                            </strong>
-
-                                        </div>
-
-
-                                        <div className="machine-info-item">
-
-                                            <span>
-                                                Machine Type
-                                            </span>
-
-                                            <strong>
-                                                {machine.type}
-                                            </strong>
-
-                                        </div>
-
-
-                                        <div className="machine-info-item">
-
-                                            <span>
-                                                Location
-                                            </span>
-
-                                            <strong>
-                                                {machine.location}
-                                            </strong>
-
-                                        </div>
-
-
-                                        <div className="machine-info-item">
-
-                                            <span>
-                                                Current Status
-                                            </span>
-
-                                            <strong
-                                                className={`machine-status-text ${getStatusClass(
-                                                    machineStatus
-                                                )}`}
-                                            >
-                                                {machineStatus}
-                                            </strong>
-
-                                        </div>
-
-                                    </div>
-
-                                ))}
-
-                        </div>  
-
-
-                        <div className="metrics-grid">
-
-
-                            <MetricCard
-
-                                title="Temperature"
-
-                                value={
-                                    temperature
-                                }
-
-                                unit="°C"
-
-                                icon={
-                                    <Thermometer
-                                        size={28}
-                                    />
-                                }
-
-                                status={
-                                    temperature > 72
-                                        ? "High"
-                                        : "Normal"
-                                }
-
-                            />
-
-
-                            <MetricCard
-
-                                title="Vibration"
-
-                                value={
-                                    vibration
-                                }
-
-                                unit="mm/s"
-
-                                icon={
-                                    <Activity
-                                        size={28}
-                                    />
-                                }
-
-                                status={
-                                    vibration > 3.5
-                                        ? "High"
-                                        : "Normal"
-                                }
-
-                            />
-
-
-                            <MetricCard
-
-                                title="Current"
-
-                                value={
-                                    current
-                                }
-
-                                unit="A"
-
-                                icon={
-                                    <Zap
-                                        size={28}
-                                    />
-                                }
-
-                                status={
-                                    current > 2.4
-                                        ? "High"
-                                        : "Normal"
-                                }
-
-                            />
-
-
-                            <MetricCard
-
-                                title="Machine Health"
-
-                                value={
-                                    health
-                                }
-
-                                unit="%"
-
-                                icon={
-                                    <HeartPulse
-                                        size={28}
-                                    />
-                                }
-
-                                status={
-                                    machineStatus
-                                }
-
-                            />
-
-
+                            <div className="machine-information">
+                                <div className="machine-info-item">
+                                    <span>Machine ID</span>
+                                    <strong>{activeMachineObj.id}</strong>
+                                </div>
+                                <div className="machine-info-item">
+                                    <span>Asset Type</span>
+                                    <strong>{activeMachineObj.type}</strong>
+                                </div>
+                                <div className="machine-info-item">
+                                    <span>Plant Location</span>
+                                    <strong>{activeMachineObj.location}</strong>
+                                </div>
+                                <div className="machine-info-item">
+                                    <span>Operational State</span>
+                                    <strong className={`machine-status-text ${getStatusClass(machineStatus)}`}>
+                                        {machineStatus}
+                                    </strong>
+                                </div>
+                            </div>
                         </div>
 
+                        {/* METRICS GRID */}
+                        <div className="metrics-grid">
+                            <MetricCard
+                                title="Temperature"
+                                value={temperature}
+                                unit="°C"
+                                icon={<Thermometer size={28} />}
+                                status={getTempStatus(temperature)}
+                                thresholdInfo="Warn >= 70 | Crit >= 80"
+                            />
+
+                            <MetricCard
+                                title="Vibration"
+                                value={vibration}
+                                unit="mm/s"
+                                icon={<Activity size={28} />}
+                                status={getVibStatus(vibration)}
+                                thresholdInfo="Warn >= 5.0 | Crit >= 8.0"
+                            />
+
+                            <MetricCard
+                                title="Current"
+                                value={current}
+                                unit="A"
+                                icon={<Zap size={28} />}
+                                status={getCurrStatus(current)}
+                                thresholdInfo="Warn >= 10.0 | Crit >= 12.0"
+                            />
+
+                            <MetricCard
+                                title="Machine Health"
+                                value={health}
+                                unit="%"
+                                icon={<HeartPulse size={28} />}
+                                status={machineStatus}
+                                thresholdInfo="Norm: 80-100 | Warn: 60-79"
+                            />
+                        </div>
                     </section>
 
-
-                    {/* =================================================
-                        SENSOR MONITORING
-                    ================================================= */}
-
-                    <section
-                        id="sensors"
-                        className="dashboard-section"
-                    >
-
-
+                    {/* LIVE SENSOR MONITORING */}
+                    <section id="sensors" className="dashboard-section">
                         <div className="section-header">
-
                             <div>
-
-                                <div className="section-kicker">
-                                    REAL-TIME DATA
-                                </div>
-
-                                <h2>
-                                    Live Sensor Trends
-                                </h2>
-
-                                <p>
-                                    Real-time machine sensor
-                                    monitoring and performance trends.
-                                </p>
-
+                                <div className="section-kicker">CONTINUOUS TELEMETRY</div>
+                                <h2>Live Sensor Monitoring & History</h2>
+                                <p>Dynamic time-series telemetry visualization across physical parameters.</p>
                             </div>
-
 
                             <div className="section-live-status">
-
                                 <span className="status-dot"></span>
-
                                 LIVE
-
                             </div>
-
                         </div>
-
 
                         <div className="sensor-chart-panel">
-
-                            <SensorChart
-                                data={
-                                    sensorHistory
-                                }
-                            />
-
+                            <SensorChart data={sensorHistory} />
                         </div>
-
 
                         <div className="trend-placeholder">
-
-
                             <div className="trend-line">
-
                                 <div>
-
-                                    <span>
-                                        Temperature
-                                    </span>
-
-                                    <small>
-                                        Thermal sensor
-                                    </small>
-
+                                    <span>Temperature Stream</span>
+                                    <small>Thermal RTD / Thermocouple</small>
                                 </div>
-
-                                <strong>
+                                <strong style={{ color: getTempStatus(temperature) === "Critical" ? "#EF4444" : getTempStatus(temperature) === "Warning" ? "#F59E0B" : "#F1F5F9" }}>
                                     {temperature} °C
                                 </strong>
-
                             </div>
 
-
                             <div className="trend-line">
-
                                 <div>
-
-                                    <span>
-                                        Vibration
-                                    </span>
-
-                                    <small>
-                                        Vibration sensor
-                                    </small>
-
+                                    <span>Vibration Stream</span>
+                                    <small>Triaxial Accelerometer (Velocity RMS)</small>
                                 </div>
-
-                                <strong>
+                                <strong style={{ color: getVibStatus(vibration) === "Critical" ? "#EF4444" : getVibStatus(vibration) === "Warning" ? "#F59E0B" : "#F1F5F9" }}>
                                     {vibration} mm/s
                                 </strong>
-
                             </div>
-
 
                             <div className="trend-line">
-
                                 <div>
-
-                                    <span>
-                                        Current
-                                    </span>
-
-                                    <small>
-                                        Electrical sensor
-                                    </small>
-
+                                    <span>Electrical Load</span>
+                                    <small>Current Transformer (RMS Current)</small>
                                 </div>
-
-                                <strong>
+                                <strong style={{ color: getCurrStatus(current) === "Critical" ? "#EF4444" : getCurrStatus(current) === "Warning" ? "#F59E0B" : "#F1F5F9" }}>
                                     {current} A
                                 </strong>
-
                             </div>
-
-
                         </div>
-
                     </section>
 
-
-                    {/* =================================================
-                        FAULT DETECTION
-                    ================================================= */}
-
-                    <section
-                        id="faults"
-                        className="dashboard-section"
-                    >
-
-
-                        <div className="section-header">
-
-                            <div>
-
-                                <div className="section-kicker">
-                                    SAFETY MONITORING
-                                </div>
-
-                                <h2>
-                                    Fault Detection
-                                </h2>
-
-                                <p>
-                                    AI-assisted machine condition
-                                    and fault analysis.
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        <div className="fault-panel">
-
-
-                            <div className="fault-icon">
-
-                                {machineStatus
-                                    .toLowerCase() ===
-                                    "normal" ? (
-
-                                    <ShieldCheck
-                                        size={36}
-                                    />
-
-                                ) : (
-
-                                    <AlertTriangle
-                                        size={36}
-                                    />
-
-                                )}
-
-                            </div>
-
-
-                            <div className="fault-info">
-
-                                <h3>
-                                    {faultMessage}
-                                </h3>
-
-                                <p>
-                                    Monitoring temperature,
-                                    vibration and current
-                                    continuously.
-                                </p>
-
-                            </div>
-
-
-                            <div
-                                className={`fault-status ${getStatusClass(
-                                    machineStatus
-                                )}`}
-                            >
-
-                                {machineStatus}
-
-                            </div>
-
-
-                        </div>
-
-
-                        <div className="fault-details">
-
-
-                            <div className="fault-detail-card">
-
-                                <div className="detail-number">
-                                    01
-                                </div>
-
-                                <div>
-
-                                    <h3>
-                                        What is happening?
-                                    </h3>
-
-                                    <p>
-                                        {faultExplanation ||
-                                            "The system is continuously analyzing machine sensor data."
-                                        }
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <div className="fault-detail-card">
-
-                                <div className="detail-number">
-                                    02
-                                </div>
-
-                                <div>
-
-                                    <h3>
-                                        Recommended Action
-                                    </h3>
-
-                                    <p>
-                                        {recommendedAction ||
-                                            "Continue monitoring the machine."
-                                        }
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                        </div>
-
-                    </section>
-
-
-                    {/* =================================================
-                        AI PREDICTION
-                    ================================================= */}
-
-                    <section
-                        id="predictions"
-                        className="dashboard-section"
-                    >
-
-
-                        <div className="section-header">
-
-                            <div>
-
-                                <div className="section-kicker">
-                                    ARTIFICIAL INTELLIGENCE
-                                </div>
-
-                                <h2>
-                                    AI Prediction
-                                </h2>
-
-                                <p>
-                                    Machine health prediction
-                                    generated by the AI model.
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        <div className="ai-prediction-card">
-
-
-                            <div className="ai-prediction-left">
-
-
-                                <div className="ai-title">
-
-                                    <div className="ai-icon">
-
-                                        <Bot
-                                            size={23}
-                                        />
-
-                                    </div>
-
-                                    <div>
-
-                                        <h3>
-                                            Predicted Machine Health
-                                        </h3>
-
-                                        <span>
-                                            AI condition assessment
-                                        </span>
-
-                                    </div>
-
-                                </div>
-
-
-                                <div className="ai-health-value">
-
-                                    {aiPrediction.health}%
-
-                                </div>
-
-
-                                <p>
-
-                                    Prediction Status:
-
-                                    {" "}
-
-                                    <strong>
-                                        {
-                                            aiPrediction.status
-                                        }
-                                    </strong>
-
-                                </p>
-
-
-                            </div>
-
-
-                            <div className="ai-prediction-message">
-
-                                <Sparkles
-                                    size={25}
-                                />
-
-
-                                {aiPrediction.status ===
-                                    "Healthy" && (
-
-                                    <p>
-                                        Machine condition
-                                        is currently healthy.
-                                        Continue normal
-                                        monitoring.
-                                    </p>
-
-                                )}
-
-
-                                {aiPrediction.status ===
-                                    "Warning" && (
-
-                                    <p>
-                                        Machine requires
-                                        attention. Monitor
-                                        sensor conditions
-                                        closely.
-                                    </p>
-
-                                )}
-
-
-                                {aiPrediction.status ===
-                                    "Critical" && (
-
-                                    <p>
-                                        Critical condition
-                                        detected.
-                                        Maintenance is
-                                        recommended.
-                                    </p>
-
-                                )}
-
-
-                                {aiPrediction.status ===
-                                    "Loading..." && (
-
-                                    <p>
-                                        AI prediction is
-                                        being calculated...
-                                    </p>
-
-                                )}
-
-                            </div>
-
-
-                        </div>
-
-                    </section>
-
-
-                    {/* =================================================
-                        MAINTENANCE ASSISTANT
-                    ================================================= */}
-
-                    <section
-                        id="assistant"
-                        className="dashboard-section"
-                    >
-
-
-                        <div className="section-header">
-
-                            <div>
-
-                                <div className="section-kicker">
-                                    AI SUPPORT
-                                </div>
-
-                                <h2>
-                                    Maintenance Assistant
-                                </h2>
-
-                                <p>
-                                    Ask the AI assistant about
-                                    the current machine condition.
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        <div className="chatbot-container">
-
-
-                            {/* CHAT HEADER */}
-
-                            <div className="chatbot-header">
-
-
-                                <div className="chatbot-title">
-
-
-                                    <div className="chatbot-icon">
-
-                                        <Bot
-                                            size={23}
-                                        />
-
-                                    </div>
-
-
-                                    <div>
-
-                                        <h3>
-                                            AI Maintenance Assistant
-                                        </h3>
-
-                                        <span>
-                                            AI-powered machine support
-                                        </span>
-
-                                    </div>
-
-
-                                </div>
-
-
-                                <div className="assistant-online">
-
-                                    <span className="status-dot"></span>
-
-                                    Online
-
-                                </div>
-
-
-                            </div>
-
-
-                            {/* CHAT BODY */}
-
-                            <div className="chatbot-body">
-
-
-                                <div className="chatbot-messages">
-
-
-                                    {chatMessages.map(
-                                        (
-                                            message,
-                                            index
-                                        ) => (
-
-                                            <div
-                                                key={
-                                                    index
-                                                }
-                                                className={`chat-message ${message.sender}`}
-                                            >
-
-
-                                                <div className="chat-message-label">
-
-                                                    {message.sender ===
-                                                        "bot"
-                                                        ? "Maintenance Assistant"
-                                                        : "You"
-                                                    }
-
-                                                </div>
-
-
-                                                <div
-                                                    className="chat-message-text"
-                                                    style={{
-                                                        whiteSpace:
-                                                            "pre-line"
-                                                    }}
-                                                >
-
-                                                    {
-                                                        message.text
-                                                    }
-
-                                                </div>
-
-
-                                            </div>
-
-                                        )
-                                    )}
-
-
-                                </div>
-
-
-                                {/* QUICK QUESTIONS */}
-
-                                <div className="quick-questions">
-
-
-                                    <div className="quick-title">
-
-                                        Quick Questions
-
-                                    </div>
-
-
-                                    {quickQuestions.map(
-                                        (
-                                            question,
-                                            index
-                                        ) => (
-
-                                            <button
-                                                key={
-                                                    index
-                                                }
-                                                className="quick-question"
-                                                onClick={() =>
-                                                    handleBackendChat(
-                                                        question
-                                                    )
-                                                }
-                                            >
-
-                                                <span>
-                                                    {
-                                                        question
-                                                    }
-                                                </span>
-
-                                                <ArrowRight
-                                                    size={16}
-                                                />
-
-                                            </button>
-
-                                        )
-                                    )}
-
-
-                                </div>
-
-
-                            </div>
-
-
-                            {/* INPUT */}
-
-                            <div className="chatbot-input-area">
-
-
-                                <input
-
-                                    type="text"
-
-                                    value={
-                                        chatInput
-                                    }
-
-                                    onChange={
-                                        (e) =>
-                                            setChatInput(
-                                                e.target.value
-                                            )
-                                    }
-
-                                    onKeyDown={
-                                        (e) => {
-
-                                            if (
-                                                e.key ===
-                                                "Enter"
-                                            ) {
-
-                                                handleBackendChat();
-
-                                            }
-
-                                        }
-                                    }
-
-                                    placeholder="Ask something about the machine..."
-
-                                />
-
-
-                                <button
-                                    onClick={() =>
-                                        handleBackendChat()
-                                    }
-                                >
-
-                                    <span>
-                                        Send
-                                    </span>
-
-                                    <ArrowRight
-                                        size={18}
-                                    />
-
-                                </button>
-
-
-                            </div>
-
-
-                        </div>
-
-                    </section>
-
+                    {/* FAULT DETECTION SECTION */}
+                    <FaultDetection
+                        machineStatus={machineStatus}
+                        faultMessage={faultMessage}
+                        faultExplanation={faultExplanation}
+                        recommendedAction={recommendedAction}
+                        warnings={warnings}
+                        faults={faults}
+                    />
+
+                    {/* AI PREDICTION SECTION */}
+                    <AIPrediction
+                        aiPrediction={aiPrediction}
+                    />
+
+                    {/* MAINTENANCE ASSISTANT SECTION */}
+                    <Chatbot
+                        messages={chatMessages}
+                        onSendMessage={handleSendMessage}
+                        isLoading={isChatLoading}
+                        activeMachineId={selectedMachine}
+                    />
+
+                    {/* SETTINGS SECTION */}
+                    <SettingsSection
+                        activeMachineId={selectedMachine}
+                        onFaultSimulate={handleFaultSimulate}
+                        currentSimulationMode={simulationMode}
+                    />
 
                 </div>
-
             </main>
-
         </div>
-
     );
-
 }
-
 
 export default App;

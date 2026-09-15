@@ -1,618 +1,424 @@
-import random
-import time
-import math
+"""
+ESA Predictive Maintenance System - Backend API
+FastAPI service delivering real-time industrial telemetry, AI health predictions,
+fault diagnostics, multi-machine tracking, and conversational maintenance assistance.
+"""
 
-# =========================================================
-# REALISTIC MACHINE SENSOR SIMULATION
-# =========================================================
-
-simulation_start_time = time.time()
-
-sensor_state = {
-    "temperature": 68.0,
-    "vibration": 2.8,
-    "current": 2.2,
-    "health": 95.0
-}
-
-def generate_sensor_data():
-    """
-    Generate realistic industrial machine sensor data.
-
-    The values change gradually instead of jumping randomly.
-    This makes the simulation closer to a real sensor system.
-    """
-
-    elapsed = time.time() - simulation_start_time
-
-    # -----------------------------------------------------
-    # NORMAL OPERATING VALUES
-    # -----------------------------------------------------
-
-    base_temperature = 68.0
-    base_vibration = 2.8
-    base_current = 2.2
-
-    # -----------------------------------------------------
-    # SMALL REALISTIC SENSOR VARIATIONS
-    # -----------------------------------------------------
-
-    temperature_noise = random.uniform(-0.8, 0.8)
-    vibration_noise = random.uniform(-0.25, 0.25)
-    current_noise = random.uniform(-0.12, 0.12)
-
-    # -----------------------------------------------------
-    # SLOW NATURAL MACHINE VARIATION
-    # -----------------------------------------------------
-
-    temperature_wave = math.sin(elapsed / 20) * 2.0
-    vibration_wave = math.sin(elapsed / 8) * 0.35
-    current_wave = math.sin(elapsed / 15) * 0.15
-
-    # -----------------------------------------------------
-    # UPDATE SENSOR VALUES
-    # -----------------------------------------------------
-
-    sensor_state["temperature"] = (
-        base_temperature
-        + temperature_wave
-        + temperature_noise
-    )
-
-    sensor_state["vibration"] = (
-        base_vibration
-        + vibration_wave
-        + vibration_noise
-    )
-
-    sensor_state["current"] = (
-        base_current
-        + current_wave
-        + current_noise
-    )
-
-    # -----------------------------------------------------
-    # LIMIT VALUES TO REALISTIC RANGE
-    # -----------------------------------------------------
-
-    sensor_state["temperature"] = max(
-        50,
-        min(sensor_state["temperature"], 100)
-    )
-
-    sensor_state["vibration"] = max(
-        0.5,
-        min(sensor_state["vibration"], 10)
-    )
-
-    sensor_state["current"] = max(
-        1.0,
-        min(sensor_state["current"], 5.0)
-    )
-
-    # -----------------------------------------------------
-    # MACHINE HEALTH
-    # -----------------------------------------------------
-
-    temperature_penalty = max(
-        0,
-        sensor_state["temperature"] - 70
-    ) * 1.2
-
-    vibration_penalty = max(
-        0,
-        sensor_state["vibration"] - 3
-    ) * 5
-
-    current_penalty = max(
-        0,
-        sensor_state["current"] - 2.5
-    ) * 4
-
-    total_penalty = (
-        temperature_penalty
-        + vibration_penalty
-        + current_penalty
-    )
-
-    health = 100 - total_penalty
-
-    sensor_state["health"] = max(
-        0,
-        min(health, 100)
-    )
-
-    # -----------------------------------------------------
-    # FAULT DETECTION
-    # -----------------------------------------------------
-
-    faults = []
-
-    if sensor_state["temperature"] > 80:
-        faults.append("High Temperature")
-
-    if sensor_state["vibration"] > 5:
-        faults.append("Excessive Vibration")
-
-    if sensor_state["current"] > 3.5:
-        faults.append("High Current")
-
-    if len(faults) == 0:
-        status = "Normal"
-        fault = "No fault detected"
-
-    elif len(faults) == 1:
-        status = "Warning"
-        fault = faults[0]
-
-    else:
-        status = "Critical"
-        fault = ", ".join(faults)
-
-    # -----------------------------------------------------
-    # RETURN SENSOR DATA
-    # -----------------------------------------------------
-
-    return {
-        "temperature": round(
-            sensor_state["temperature"], 2
-        ),
-
-        "vibration": round(
-            sensor_state["vibration"], 2
-        ),
-
-        "current": round(
-            sensor_state["current"], 2
-        ),
-
-        "health": round(
-            sensor_state["health"], 1
-        ),
-
-        "status": status,
-
-        "fault": fault,
-
-        "timestamp": time.time()
-    }
-    
-from unittest import result
-
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+import logging
 from datetime import datetime
-import random
+from typing import Optional, Dict, Any, List
+from pydantic import BaseModel, Field
 
+from fastapi import FastAPI, Query, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from config.thresholds import SENSOR_THRESHOLDS, HEALTH_THRESHOLDS, get_sensor_severity
+from services.machine_manager import manager
+from services.health_calculation import calculate_machine_health
 from services.fault_detection import detect_fault
 from prediction import predict_machine_health
 
+# Configure Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+logger = logging.getLogger("esa_backend")
+
+# Initialize FastAPI App
 app = FastAPI(
     title="ESA Predictive Maintenance API",
-    description="Backend API for Edge AI based predictive maintenance dashboard",
-    version="1.0.0"
+    description="Edge AI Based Predictive Maintenance Monitoring Platform",
+    version="2.0.0"
 )
 
-
-# Allow the React frontend to communicate with FastAPI
+# CORS Middleware configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "*"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-@app.get("/")
-def root():
-    return {
-        "message": "ESA Predictive Maintenance API is running",
-        "status": "online"
-    }
-
-
-@app.get("/api/sensor-data")
-def get_sensor_data():
-    
-    return generate_sensor_data()
-
-    temperature = round(random.uniform(65, 78), 1)
-    vibration = round(random.uniform(2.5, 4.5), 2)
-    current = round(random.uniform(1.8, 2.8), 2)
-
-    result = detect_fault(
-        temperature,
-        vibration,
-        current
-    )
-    health = result.get("health", 85)
-    
-    fault = result.get("fault", "No fault detected")
-
-    if fault == "Elevated vibration":
-        fault_explanation = "High vibration may indicate bearing wear, imbalance, or mechanical misalignment."
-        recommended_action = "Inspect bearings, check shaft alignment, and verify machine mounting."
-
-    elif fault == "Critical vibration":
-        fault_explanation = "Critical vibration indicates a potentially serious mechanical abnormality."
-        recommended_action = "Stop the machine if necessary and inspect bearings, shaft alignment, and rotating components."
-
-    elif fault == "Elevated current":
-        fault_explanation = "High current may indicate excessive load, motor stress, or electrical problems."
-        recommended_action = "Check machine load, motor condition, wiring, and electrical connections."
-
-    elif fault == "High temperature":
-        fault_explanation = "High temperature may indicate overheating, insufficient cooling, or excessive mechanical load."
-        recommended_action = "Check cooling system, ventilation, lubrication, and machine load."
-
-    else:
-        fault_explanation = "No significant fault detected."
-        recommended_action = "Continue normal monitoring."
-
-    return {
-        "timestamp": datetime.now().isoformat(),
-        "temperature": temperature,
-        "vibration": vibration,
-        "current": current,
-        "health": health,
-        "status": result.get("status", "Normal"),
-        "fault": fault,
-        "fault_explanation": fault_explanation,
-        "recommended_action": recommended_action,
-        "warnings": result.get("warnings", []),
-        "faults": result.get("faults", [])
-    }
-    
-@app.get("/api/ai-prediction")
-def get_ai_prediction():
-
-    temperature = round(random.uniform(65, 80), 1)
-    vibration = round(random.uniform(2.0, 5.0), 2)
-    current = round(random.uniform(1.5, 3.5), 2)
-
-    prediction = predict_machine_health(
-        temperature,
-        vibration,
-        current
-    )
-
-    return {
-        "timestamp": datetime.now().isoformat(),
-        "temperature": temperature,
-        "vibration": vibration,
-        "current": current,
-        "health": prediction["health"],
-        "status": prediction["status"]
-    }
-    
-    
-from pydantic import BaseModel
-
+# =========================================================
+# PYDANTIC DATA CONTRACTS
+# =========================================================
 
 class ChatRequest(BaseModel):
     question: str
+    machine_id: Optional[str] = "MTR-001"
+
+
+class TelemetryInput(BaseModel):
+    machine_id: str
+    temperature: Optional[float] = Field(None, description="Temperature in °C")
+    vibration: Optional[float] = Field(None, description="Vibration in mm/s")
+    current: Optional[float] = Field(None, description="Current in A")
+
+
+class FaultSimulationRequest(BaseModel):
+    mode: str = Field(
+        ...,
+        description="Simulation mode: normal, high_temperature, elevated_temperature, excessive_vibration, elevated_vibration, over_current, elevated_current, multiple"
+    )
+
+
+# =========================================================
+# API ENDPOINTS
+# =========================================================
+
+@app.get("/")
+def root():
+    """Service health check."""
+    return {
+        "message": "ESA Predictive Maintenance API is active",
+        "status": "online",
+        "version": "2.0.0",
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.get("/api/thresholds")
+def get_thresholds():
+    """Retrieve centralized sensor thresholds and health status criteria."""
+    return {
+        "sensor_thresholds": SENSOR_THRESHOLDS,
+        "health_thresholds": HEALTH_THRESHOLDS
+    }
+
+
+@app.get("/api/machines")
+def get_machines():
+    """Retrieve list of all monitored machines."""
+    return manager.list_machines()
+
+
+@app.get("/api/machines/{machine_id}")
+def get_machine_detail(machine_id: str):
+    """Retrieve details and live telemetry for a specific machine."""
+    machine = manager.get_machine(machine_id)
+    machine.update_simulation()
+    return machine.get_full_status()
+
+
+@app.get("/api/sensor-data")
+def get_sensor_data(machine_id: Optional[str] = Query("MTR-001")):
+    """
+    Get live sensor telemetry, health, and fault diagnostics for the active machine.
+    Advances the simulation smoothly.
+    """
+    try:
+        machine = manager.get_machine(machine_id)
+        machine.update_simulation()
+        return machine.get_full_status()
+    except Exception as e:
+        logger.error(f"Error generating sensor data for {machine_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to retrieve sensor data")
+
+
+@app.get("/api/ai-prediction")
+def get_ai_prediction(machine_id: Optional[str] = Query("MTR-001")):
+    """
+    Get AI-based health prediction, risk assessment, and RUL for the current machine telemetry.
+    """
+    try:
+        machine = manager.get_machine(machine_id)
+        prediction = predict_machine_health(
+            machine.current_temp,
+            machine.current_vib,
+            machine.current_curr
+        )
+        return {
+            "machine_id": machine.id,
+            "timestamp": datetime.now().isoformat(),
+            "temperature": machine.current_temp,
+            "vibration": machine.current_vib,
+            "current": machine.current_curr,
+            "health": prediction["health"],
+            "current_health": prediction["current_health"],
+            "status": prediction["status"],
+            "risk": prediction["risk"],
+            "recommendation": prediction["recommendation"],
+            "anomaly_score": prediction["anomaly_score"],
+            "estimated_rul_hours": prediction["estimated_rul_hours"],
+            "model_version": prediction["model_version"],
+        }
+    except Exception as e:
+        logger.error(f"Error calculating AI prediction for {machine_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to generate AI prediction")
 
 
 @app.post("/api/chat")
 def maintenance_chat(request: ChatRequest):
+    """
+    AI Maintenance Assistant chatbot.
+    Answers diagnostic, safety, sensor, and maintenance questions using active telemetry.
+    Prioritizes specific sensor and safety questions before generic matching.
+    """
+    try:
+        raw_question = request.question.strip()
+        question = raw_question.lower()
+        machine_id = request.machine_id or "MTR-001"
 
-    question = request.question.lower()
+        machine = manager.get_machine(machine_id)
+        status_data = machine.get_full_status()
 
-    # Get the latest machine data
-    sensor_response = get_sensor_data()
+        temperature = status_data["temperature"]
+        vibration = status_data["vibration"]
+        current = status_data["current"]
+        health = status_data["health"]
+        status = status_data["status"]
+        fault = status_data["fault"]
+        explanation = status_data.get("fault_explanation", "Normal machine operation.")
+        action = status_data.get("recommended_action", "Continue standard predictive monitoring.")
+        ai_pred = status_data.get("ai_prediction", {})
+        ai_risk = ai_pred.get("risk", "Low")
+        source = status_data.get("source", "simulated")
 
-    temperature = sensor_response["temperature"]
-    vibration = sensor_response["vibration"]
-    current = sensor_response["current"]
-    health = sensor_response["health"]
-    status = sensor_response["status"]
-    fault = sensor_response["fault"]
-    explanation = sensor_response["fault_explanation"]
-    action = sensor_response["recommended_action"]
-    
-    # Sensor severity analysis
-    if vibration >= 4:
-        vibration_severity = "High"
-        vibration_message = (
-            "Vibration is above the monitored range and "
-            "may indicate a mechanical problem."
-        )
-    elif vibration >= 3.5:
-        vibration_severity = "Moderate"
-        vibration_message = (
-            "Vibration is elevated and should be monitored closely."
-        )
-    else:
-        vibration_severity = "Normal"
-        vibration_message = (
-            "Vibration is currently within the monitored range."
-        )
+        temp_sev = get_sensor_severity("temperature", temperature)
+        vib_sev = get_sensor_severity("vibration", vibration)
+        curr_sev = get_sensor_severity("current", current)
 
-    if temperature >= 75:
-        temperature_severity = "High"
-        temperature_message = (
-            "Temperature is high and may indicate overheating "
-            "or excessive machine load."
-        )
-    elif temperature >= 72:
-        temperature_severity = "Moderate"
-        temperature_message = (
-            "Temperature is elevated and should be monitored."
-        )
-    else:
-        temperature_severity = "Normal"
-        temperature_message = (
-            "Temperature is currently within the monitored range."
-        )
-    
-    if current >= 2.4:
-        current_severity = "High"
-        current_message = (
-            "Electrical current is elevated and may indicate "
-            "excessive load or motor stress."
-        )
-    else:
-        current_severity = "Normal"
-        current_message = (
-            "Electrical current is currently within the monitored range."
-        )
-        
-    # Maintenance diagnosis
-    if fault == "Elevated vibration":
-
-        probable_cause = (
-            "Possible bearing wear, shaft misalignment, "
-            "mechanical imbalance, or loose mounting."
+        # Context prefix adhering to safety standards
+        context_prefix = (
+            f"Based on current telemetry for {machine.name} ({machine_id}) [{source}]:\n\n"
         )
 
-        machine_risk = (
-            "Continued high vibration may cause mechanical "
-            "wear and reduce machine reliability."
-        )
+        # -------------------------------------------------------------
+        # 1. SAFETY & OPERATION QUERIES (Checked FIRST)
+        # -------------------------------------------------------------
+        if any(w in question for w in ["safe", "continue", "operate", "operation", "shut down", "stop", "danger", "run"]):
+            if status == "Critical":
+                answer = (
+                    f"{context_prefix}"
+                    f"⚠️ Safety Status: NOT SAFE\n"
+                    f"• Machine Condition: Critical (Health: {health}%)\n"
+                    f"• Active Fault: {fault}\n"
+                    f"• Risk Assessment: High\n\n"
+                    f"Explanation:\n{explanation}\n\n"
+                    f"Recommended Action:\n{action}\n\n"
+                    f"Continued operation risks severe mechanical or electrical failure. Immediately disconnect and perform inspection."
+                )
+            elif status == "Warning":
+                answer = (
+                    f"{context_prefix}"
+                    f"⚠️ Safety Status: CAUTION\n"
+                    f"• Machine Condition: Warning (Health: {health}%)\n"
+                    f"• Active Issue: {fault}\n"
+                    f"• Risk Assessment: Moderate\n\n"
+                    f"Explanation:\n{explanation}\n\n"
+                    f"Recommended Action:\n{action}\n\n"
+                    f"The machine may continue temporary operation under close supervision, but inspection is strongly advised."
+                )
+            else:
+                answer = (
+                    f"{context_prefix}"
+                    f"✅ Safety Status: SAFE TO OPERATE\n"
+                    f"• Machine Condition: Normal (Health: {health}%)\n"
+                    f"• Active Fault: None detected\n"
+                    f"• AI Risk Assessment: Low\n\n"
+                    f"All monitored parameters (Temperature, Vibration, Current) are within safe engineering limits."
+                )
 
-    elif fault == "High temperature":
-
-        probable_cause = (
-            "Possible overheating, insufficient cooling, "
-            "excessive load, or lubrication problems."
-        )
-
-        machine_risk = (
-            "Continued overheating may damage machine "
-            "components and reduce operating life."
-        )
-
-    elif fault == "High current":
-
-        probable_cause = (
-            "Possible excessive load, motor stress, "
-            "electrical abnormality, or mechanical resistance."
-        )
-
-        machine_risk = (
-            "Continued high current may cause motor "
-            "overheating or electrical damage."
-        )
-
-    elif fault == "Multiple abnormalities":
-
-        probable_cause = (
-            "Multiple sensor readings are outside the "
-            "expected operating range."
-        )
-
-        machine_risk = (
-            "The machine may be experiencing a serious "
-            "operating abnormality and requires inspection."
-        )
-
-    else:
-
-        probable_cause = (
-            "No significant abnormality has been detected."
-        )
-
-        machine_risk = (
-            "Current machine condition appears normal."
-        )
-    
-    # Safety / Continue Running
-    if (
-        "safe" in question
-        or "continue" in question
-        or "run" in question
-        or "running" in question
-        or "operate" in question
-        or "operation" in question
-    ):
-
-        if status == "Critical":
-
+        # -------------------------------------------------------------
+        # 2. VIBRATION-SPECIFIC QUERIES (Checked before generic machine queries)
+        # -------------------------------------------------------------
+        elif any(w in question for w in ["vibrat", "shake", "shaking", "bearing", "alignment", "oscillation"]):
             answer = (
-                f"Safety status: NOT SAFE\n\n"
-                f"Machine condition: Critical\n\n"
-                f"Continued operation should be avoided until the fault is inspected.\n\n"
-                f"Detected fault:\n"
-                f"{fault}\n\n"
-                f"Recommended action:\n"
-                f"{action}"
+                f"{context_prefix}"
+                f"📊 Vibration Analysis:\n"
+                f"• Current Reading: {vibration} mm/s\n"
+                f"• Severity: {vib_sev} (Warning: >= 5.0 mm/s, Critical: >= 8.0 mm/s)\n\n"
+                f"Meaning:\n"
+                f"{'Vibration is critical! High risk of mechanical bearing failure, severe imbalance, or looseness.' if vib_sev == 'Critical' else 'Vibration is elevated above normal. May indicate early bearing wear, shaft misalignment, or unbalance.' if vib_sev == 'Warning' else 'Vibration is well within normal operating thresholds (< 5.0 mm/s).'}\n\n"
+                f"Recommended Action:\n"
+                f"{'Stop the motor immediately and inspect bearings, shaft alignment, and foundation anchor bolts.' if vib_sev != 'Normal' else 'No mechanical vibration corrective action required. Maintain routine lubrication schedule.'}"
             )
 
-        elif status == "Warning":
-
+        # -------------------------------------------------------------
+        # 3. TEMPERATURE-SPECIFIC QUERIES
+        # -------------------------------------------------------------
+        elif any(w in question for w in ["temperature", "hot", "heat", "overheat", "overheating", "thermal", "cooling"]):
             answer = (
-                f"Safety status: CAUTION\n\n"
-                f"Machine condition: Warning\n\n"
-                f"The machine may continue operating with close monitoring, "
-                f"but the identified issue should be inspected.\n\n"
-                f"Detected fault:\n"
-                f"{fault}\n\n"
-                f"Recommended action:\n"
-                f"{action}"
+                f"{context_prefix}"
+                f"🌡️ Temperature Analysis:\n"
+                f"• Current Reading: {temperature} °C\n"
+                f"• Severity: {temp_sev} (Warning: >= 70 °C, Critical: >= 80 °C)\n\n"
+                f"Meaning:\n"
+                f"{'Temperature is critically high! Danger of winding insulation breakdown or thermal seizure.' if temp_sev == 'Critical' else 'Temperature is elevated above normal operational limits. Inspect cooling vents and lubrication.' if temp_sev == 'Warning' else 'Thermal conditions are optimal (< 70 °C).'}\n\n"
+                f"Recommended Action:\n"
+                f"{'Check cooling fan airflow, clean heat sink fins, and verify grease viscosity.' if temp_sev != 'Normal' else 'Maintain normal thermal monitoring.'}"
             )
 
+        # -------------------------------------------------------------
+        # 4. CURRENT / ELECTRICAL QUERIES
+        # -------------------------------------------------------------
+        elif any(w in question for w in ["current", "electrical", "amp", "amps", "amperage", "load", "motor stress", "voltage"]):
+            answer = (
+                f"{context_prefix}"
+                f"⚡ Current & Electrical Load Analysis:\n"
+                f"• Current Draw: {current} A\n"
+                f"• Severity: {curr_sev} (Warning: >= 10.0 A, Critical: >= 12.0 A)\n\n"
+                f"Meaning:\n"
+                f"{'Current draw is in the critical overload zone! Imminent risk of tripping circuit protection or burning motor windings.' if curr_sev == 'Critical' else 'Current draw is elevated, indicating excessive mechanical resistance or elevated line demand.' if curr_sev == 'Warning' else 'Current draw is normal and within nominal rating.'}\n\n"
+                f"Recommended Action:\n"
+                f"{'Inspect mechanical load, check for rotor binding, and verify supply phase balance.' if curr_sev != 'Normal' else 'Continue standard electrical monitoring.'}"
+            )
+
+        # -------------------------------------------------------------
+        # 5. MAINTENANCE & ACTION QUERIES
+        # -------------------------------------------------------------
+        elif any(w in question for w in ["maintenance", "action", "do", "recommend", "fix", "repair", "procedure", "solution"]):
+            answer = (
+                f"{context_prefix}"
+                f"🔧 Maintenance Recommendations:\n"
+                f"• Machine Status: {status}\n"
+                f"• Primary Diagnosis: {fault}\n\n"
+                f"Explanation:\n{explanation}\n\n"
+                f"Target Action:\n{action}\n\n"
+                f"AI Risk Index: {ai_risk} | Estimated RUL: {ai_pred.get('estimated_rul_hours', 'N/A')} hours."
+            )
+
+        # -------------------------------------------------------------
+        # 6. FAULT / ROOT CAUSE QUERIES
+        # -------------------------------------------------------------
+        elif any(w in question for w in ["fault", "problem", "wrong", "abnormal", "why", "cause", "issue"]):
+            answer = (
+                f"{context_prefix}"
+                f"🔍 Diagnostic Breakdown:\n"
+                f"• Detected Condition: {fault}\n"
+                f"• Severity Level: {status}\n\n"
+                f"Engineering Cause:\n{explanation}\n\n"
+                f"Recommended Resolution:\n{action}"
+            )
+
+        # -------------------------------------------------------------
+        # 7. AI PREDICTION & RUL QUERIES
+        # -------------------------------------------------------------
+        elif any(w in question for w in ["predict", "ai", "rul", "remaining", "forecast", "future", "risk"]):
+            answer = (
+                f"{context_prefix}"
+                f"🤖 Edge AI Prediction Report:\n"
+                f"• Predicted Health: {ai_pred.get('health', health)}%\n"
+                f"• AI Risk Classification: {ai_risk}\n"
+                f"• Estimated Remaining Useful Life (RUL): ~{ai_pred.get('estimated_rul_hours', 'N/A')} operating hours\n"
+                f"• Anomaly Likelihood Score: {ai_pred.get('anomaly_score', 0.05)}\n\n"
+                f"Advisory:\n{ai_pred.get('recommendation', 'Continue normal predictive monitoring.')}"
+            )
+
+        # -------------------------------------------------------------
+        # 8. GENERAL STATUS & HEALTH QUERIES
+        # -------------------------------------------------------------
+        elif any(w in question for w in ["status", "health", "overview", "condition", "how is"]):
+            answer = (
+                f"{context_prefix}"
+                f"📋 Machine Overview:\n"
+                f"• Machine: {machine.name} ({machine.type})\n"
+                f"• Location: {machine.location}\n"
+                f"• Overall Health: {health}%\n"
+                f"• System Status: {status}\n"
+                f"• Active Fault: {fault}\n\n"
+                f"Telemetry Snapshot:\n"
+                f"• Temperature: {temperature} °C ({temp_sev})\n"
+                f"• Vibration: {vibration} mm/s ({vib_sev})\n"
+                f"• Current: {current} A ({curr_sev})"
+            )
+
+        # -------------------------------------------------------------
+        # 9. GREETING
+        # -------------------------------------------------------------
+        elif any(w in question for w in ["hello", "hi", "hey", "help", "assistant"]):
+            answer = (
+                f"Hello! I am your AI Maintenance Assistant for the ESA Predictive Maintenance System.\n\n"
+                f"Currently monitoring: {machine.name} ({machine_id}).\n\n"
+                f"You can ask me questions such as:\n"
+                f"• 'Is the machine safe to operate?'\n"
+                f"• 'Why is vibration high?'\n"
+                f"• 'What is the current temperature status?'\n"
+                f"• 'What should I do for maintenance?'\n"
+                f"• 'What is the AI prediction and remaining useful life?'"
+            )
+
+        # -------------------------------------------------------------
+        # 10. FALLBACK
+        # -------------------------------------------------------------
         else:
-
             answer = (
-                f"Safety status: SAFE\n\n"
-                f"Machine condition: Normal\n\n"
-                f"The machine can continue normal operation "
-                f"with regular monitoring."
+                f"{context_prefix}"
+                f"I can assist with machine diagnostics and predictive maintenance:\n"
+                f"• Safety & Operation: 'Is the machine safe to run?'\n"
+                f"• Vibration Analysis: 'Why is the machine vibrating?'\n"
+                f"• Thermal Conditions: 'What is the motor temperature?'\n"
+                f"• Electrical Load: 'What is the current draw?'\n"
+                f"• Fault & Actions: 'What should I do for maintenance?'\n"
+                f"• AI Forecasting: 'What is the predicted health and RUL?'"
             )
-            
-    # Maintenance
-    elif (
-        "solution" in question
-        or "fix" in question
-        or "action" in question
-        or "maintenance" in question
-        or "what should i do" in question
-    ):
 
-        answer = (
-            f"Detected fault: {fault}\n\n"
-            f"Probable cause:\n"
-            f"{explanation}\n\n"
-            f"Risk:\n"
-            f"{'Continued operation may increase machine wear and reduce reliability.' if status != 'Normal' else 'Current machine condition appears normal.'}\n\n"
-            f"Recommended action:\n"
-            f"{action}"
-        )
-        
-    # Fault questions
-    elif (
-        "fault" in question
-        or "problem" in question
-        or "wrong" in question
-        or "why is there a fault" in question
-        or "what caused the fault" in question
-        or "check first" in question
-    ):
+        return {
+            "question": raw_question,
+            "answer": answer,
+            "machine_id": machine_id,
+            "machine_status": status,
+            "health": health,
+            "fault": fault,
+            "timestamp": datetime.now().isoformat()
+        }
 
-        answer = (
-            f"Detected fault: {fault}\n\n"
-            f"Probable cause:\n"
-            f"{explanation}\n\n"
-            f"Risk:\n"
-            f"{'Continued operation may increase machine wear and reduce reliability.' if status != 'Normal' else 'Current machine condition appears normal.'}\n\n"
-            f"Recommended action:\n"
-            f"{action}"
-        )
+    except Exception as e:
+        logger.error(f"Error in maintenance chat: {e}", exc_info=True)
+        return {
+            "question": request.question,
+            "answer": "An error occurred while analyzing machine telemetry. Please ensure the machine manager is running.",
+            "machine_status": "Unknown",
+            "health": 0,
+            "fault": "Internal error"
+        }
 
 
-
-     # Temperature-specific questions
-    elif (
-        "temperature" in question
-        or "hot" in question
-    ):
-
-        answer = (
-            f"Temperature: {temperature} °C\n\n"
-            f"Severity: {temperature_severity}\n\n"
-            f"Meaning:\n"
-            f"{temperature_message}\n\n"
-            f"Current machine status: {status}\n\n"
-            f"Recommended action:\n"
-            f"{action}"
-        )
-
-    # Vibration-specific questions
-    elif (
-        "vibration" in question
-        or "vibrating" in question
-        or "shake" in question
-    ):
-
-        answer = (
-            f"Vibration: {vibration} mm/s\n\n"
-            f"Severity: {vibration_severity}\n\n"
-            f"Meaning:\n"
-            f"{vibration_message}\n\n"
-            f"Current machine status: {status}\n\n"
-            f"Recommended action:\n"
-            f"{action}"
-        )
-
-    # Current-specific questions
-    elif (
-        "current" in question
-        or "electrical" in question
-    ):
-
-        answer = (
-            f"Electrical current: {current} A\n\n"
-            f"Severity: {current_severity}\n\n"
-            f"Meaning:\n"
-            f"{current_message}\n\n"
-            f"Current machine status: {status}\n\n"
-            f"Recommended action:\n"
-            f"{action}"
-        )
-
-
-    # Health
-    elif "health" in question:
-
-        answer = (
-            f"Current machine health is {health}%. "
-            f"Machine status is {status}."
-        )
-        
-    # Machine condition
-    elif (
-        "condition" in question
-        or "status" in question
-    ) and not (
-        "fault" in question
-        or "problem" in question
-        or "why" in question
-        or "cause" in question
-        or "causing" in question
-        or "vibrat" in question
-    ):
-
-        answer = (
-            f"Current machine status is {status}. "
-            f"Machine health is {health}%. "
-            f"Temperature is {temperature} °C, "
-            f"vibration is {vibration} mm/s, "
-            f"and current is {current} A. "
-            f"Current fault: {fault}."
-        )
-
-    # Greeting
-    elif (
-        "hello" in question
-        or "hi" in question
-    ):
-
-        answer = (
-            "Hello! I am your maintenance assistant. "
-            "I can help you understand the current "
-            "machine condition, faults, sensor values, "
-            "and maintenance actions."
-        )
-
-    # Unknown question
-    else:
-        answer = (
-            "I can help you with:\n\n"
-            "• Machine condition\n"
-            "• Machine health\n"
-            "• Temperature\n"
-            "• Vibration\n"
-            "• Electrical current\n"
-            "• Faults and causes\n"
-            "• Safety and operation\n"
-            "• Maintenance recommendations"
-        )
-
+@app.post("/api/telemetry")
+def ingest_hardware_telemetry(payload: TelemetryInput):
+    """
+    Ingest real hardware telemetry from ESP32, Raspberry Pi, or industrial edge gateways.
+    Switches data source to 'hardware'.
+    """
+    machine = manager.get_machine(payload.machine_id)
+    machine.set_hardware_telemetry(
+        temperature=payload.temperature,
+        vibration=payload.vibration,
+        current=payload.current
+    )
+    logger.info(
+        f"Ingested hardware telemetry for {payload.machine_id}: "
+        f"T={payload.temperature}°C, V={payload.vibration}mm/s, I={payload.current}A"
+    )
     return {
-        "question": request.question,
-        "answer": answer,
-        "machine_status": status,
-        "health": health,
-        "fault": fault
+        "status": "success",
+        "message": f"Telemetry updated for {payload.machine_id}",
+        "machine_status": machine.get_full_status()
+    }
+
+
+@app.post("/api/machines/{machine_id}/simulate-fault")
+def set_simulation_fault(machine_id: str, request: FaultSimulationRequest):
+    """
+    Toggle fault injection simulation for academic demonstration and system testing.
+    Valid modes: normal, high_temperature, elevated_temperature, excessive_vibration,
+    elevated_vibration, over_current, elevated_current, multiple.
+    """
+    machine = manager.get_machine(machine_id)
+    machine.simulation_mode = request.mode
+    machine.source = "simulated"
+    machine.update_simulation()
+    logger.info(f"Set simulation mode on {machine_id} to '{request.mode}'")
+    return {
+        "machine_id": machine_id,
+        "simulation_mode": request.mode,
+        "status": machine.get_full_status()
     }
