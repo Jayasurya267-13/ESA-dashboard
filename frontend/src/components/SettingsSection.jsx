@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings, Sliders, Cpu, Activity, RefreshCw, Check, AlertTriangle } from "lucide-react";
+import { Settings, Sliders, Cpu, Activity, Check } from "lucide-react";
 
 function SettingsSection({
     activeMachineId,
@@ -14,7 +14,7 @@ function SettingsSection({
         setStatusMsg("");
         try {
             await onFaultSimulate(mode);
-            setStatusMsg(`Simulated mode: ${mode}`);
+            setStatusMsg(`Simulated mode active: ${mode.replace(/_/g, " ")}`);
             setTimeout(() => setStatusMsg(""), 4000);
         } catch (e) {
             setStatusMsg("Error updating simulation mode");
@@ -33,9 +33,11 @@ function SettingsSection({
         <section id="settings" className="dashboard-section">
             <div className="section-header">
                 <div>
-                    <div className="section-kicker">CONFIGURATION & HARDWARE</div>
+                    <div className="section-kicker">
+                        <Settings size={13} /> CONFIGURATION & HARDWARE
+                    </div>
                     <h2>System Settings & Edge AI Gateway</h2>
-                    <p>Sensor threshold parameters, hardware connection endpoints, and demonstration simulation controls.</p>
+                    <p>Sensor threshold parameters, physical hardware ingestion gateway, and live demo fault injection controls.</p>
                 </div>
             </div>
 
@@ -43,14 +45,14 @@ function SettingsSection({
                 {/* CARD 1: CENTRALIZED THRESHOLDS */}
                 <div className="panel" style={{ padding: "24px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-                        <Sliders size={20} color="#00C9A7" />
-                        <h3 style={{ margin: 0, fontSize: "16px", color: "#F1F5F9" }}>Standard Sensor Thresholds</h3>
+                        <Sliders size={20} color="#00E5BF" />
+                        <h3 style={{ margin: 0, fontSize: "16px", color: "#F8FAFC" }}>Standard Sensor Thresholds</h3>
                     </div>
 
                     <div style={{ overflowX: "auto" }}>
                         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", textAlign: "left" }}>
                             <thead>
-                                <tr style={{ borderBottom: "1px solid rgba(0, 201, 167, 0.2)", color: "#94A3B8" }}>
+                                <tr style={{ borderBottom: "1px solid rgba(0, 229, 191, 0.2)", color: "#94A3B8" }}>
                                     <th style={{ padding: "8px" }}>Parameter</th>
                                     <th style={{ padding: "8px" }}>Normal</th>
                                     <th style={{ padding: "8px", color: "#F59E0B" }}>Warning</th>
@@ -60,10 +62,10 @@ function SettingsSection({
                             <tbody>
                                 {thresholds.map((t, i) => (
                                     <tr key={i} style={{ borderBottom: "1px solid rgba(148, 163, 184, 0.08)" }}>
-                                        <td style={{ padding: "10px 8px", fontWeight: "600", color: "#F1F5F9" }}>
+                                        <td style={{ padding: "10px 8px", fontWeight: "600", color: "#F8FAFC" }}>
                                             {t.parameter} ({t.unit})
                                         </td>
-                                        <td style={{ padding: "10px 8px", color: "#22C55E" }}>{t.normal}</td>
+                                        <td style={{ padding: "10px 8px", color: "#10B981" }}>{t.normal}</td>
                                         <td style={{ padding: "10px 8px", color: "#F59E0B" }}>{t.warning}</td>
                                         <td style={{ padding: "10px 8px", color: "#EF4444" }}>{t.critical}</td>
                                     </tr>
@@ -76,33 +78,33 @@ function SettingsSection({
                 {/* CARD 2: FAULT SIMULATION / DEMO MODE */}
                 <div className="panel" style={{ padding: "24px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-                        <Activity size={20} color="#7C5CFC" />
-                        <h3 style={{ margin: 0, fontSize: "16px", color: "#F1F5F9" }}>
-                            Fault Simulation & Demo ({activeMachineId})
+                        <Activity size={20} color="#8B5CF6" />
+                        <h3 style={{ margin: 0, fontSize: "16px", color: "#F8FAFC" }}>
+                            Interactive Demo & Fault Injection ({activeMachineId})
                         </h3>
                     </div>
                     <p style={{ fontSize: "12px", color: "#94A3B8", margin: "0 0 16px" }}>
-                        Test and demonstrate how the dashboard, fault classification, and AI assistant react in real-time.
+                        Test and showcase how the dashboard, diagnostics engine, and AI assistant react to real-time anomalies.
                     </p>
 
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px" }}>
                         {[
-                            { mode: "normal", label: "Normal Condition", color: "#00C9A7" },
-                            { mode: "high_temperature", label: "Simulate Critical Temp", color: "#EF4444" },
-                            { mode: "excessive_vibration", label: "Simulate Critical Vib", color: "#7C5CFC" },
+                            { mode: "normal", label: "Normal Operation", color: "#00E5BF" },
+                            { mode: "high_temperature", label: "Simulate High Temp", color: "#EF4444" },
+                            { mode: "excessive_vibration", label: "Simulate Critical Vib", color: "#8B5CF6" },
                             { mode: "over_current", label: "Simulate Overcurrent", color: "#F59E0B" },
-                            { mode: "multiple", label: "Simulate Multiple Faults", color: "#EF4444" }
+                            { mode: "multiple", label: "Simulate Multi-Fault", color: "#EF4444" }
                         ].map((btn) => (
                             <button
                                 key={btn.mode}
                                 onClick={() => handleFaultSelect(btn.mode)}
                                 disabled={simLoading}
                                 style={{
-                                    background: currentSimulationMode === btn.mode ? "rgba(0, 201, 167, 0.18)" : "#111A21",
-                                    color: currentSimulationMode === btn.mode ? "#00C9A7" : "#E2E8F0",
-                                    border: `1px solid ${currentSimulationMode === btn.mode ? "#00C9A7" : "rgba(148, 163, 184, 0.15)"}`,
+                                    background: currentSimulationMode === btn.mode ? "rgba(0, 229, 191, 0.16)" : "#16222E",
+                                    color: currentSimulationMode === btn.mode ? "#00E5BF" : "#E2E8F0",
+                                    border: `1px solid ${currentSimulationMode === btn.mode ? "#00E5BF" : "rgba(148, 163, 184, 0.15)"}`,
                                     borderRadius: "8px",
-                                    padding: "8px 10px",
+                                    padding: "8px 12px",
                                     fontSize: "12px",
                                     fontWeight: "600",
                                     cursor: "pointer",
@@ -116,7 +118,7 @@ function SettingsSection({
                     </div>
 
                     {statusMsg && (
-                        <div style={{ marginTop: "12px", fontSize: "12px", color: "#00C9A7", display: "flex", alignItems: "center", gap: "6px" }}>
+                        <div style={{ marginTop: "12px", fontSize: "12px", color: "#00E5BF", display: "flex", alignItems: "center", gap: "6px" }}>
                             <Check size={14} /> {statusMsg}
                         </div>
                     )}
@@ -125,21 +127,21 @@ function SettingsSection({
                 {/* CARD 3: HARDWARE INTEGRATION GATEWAY */}
                 <div className="panel" style={{ padding: "24px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
-                        <Cpu size={20} color="#00C9A7" />
-                        <h3 style={{ margin: 0, fontSize: "16px", color: "#F1F5F9" }}>Physical Hardware Gateway</h3>
+                        <Cpu size={20} color="#00E5BF" />
+                        <h3 style={{ margin: 0, fontSize: "16px", color: "#F8FAFC" }}>Physical Hardware Gateway</h3>
                     </div>
                     <p style={{ fontSize: "12px", color: "#94A3B8", margin: "0 0 12px", lineHeight: 1.5 }}>
-                        Connect physical sensors (DS18B20 / PT100, MPU6050 / ADXL345, CT Current Sensor) via ESP32, Raspberry Pi, or industrial edge gateway.
+                        Connect physical sensors (DS18B20 / RTD, MPU6050, SCT-013 CT) via ESP32, Raspberry Pi, or edge gateway.
                     </p>
 
                     <div style={{
-                        background: "#111A21",
-                        border: "1px solid rgba(0, 201, 167, 0.2)",
+                        background: "#0E1620",
+                        border: "1px solid rgba(0, 229, 191, 0.22)",
                         borderRadius: "8px",
                         padding: "10px 14px",
                         fontSize: "11px",
                         fontFamily: "monospace",
-                        color: "#00C9A7",
+                        color: "#00E5BF",
                         wordBreak: "break-all"
                     }}>
                         POST http://127.0.0.1:8000/api/telemetry

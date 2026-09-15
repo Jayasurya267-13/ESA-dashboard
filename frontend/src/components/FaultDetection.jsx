@@ -15,16 +15,18 @@ function FaultDetection({
         <section id="faults" className="dashboard-section">
             <div className="section-header">
                 <div>
-                    <div className="section-kicker">SAFETY & DIAGNOSTICS</div>
+                    <div className="section-kicker">
+                        <AlertTriangle size={13} /> SAFETY & DIAGNOSTICS
+                    </div>
                     <h2>Fault Detection & Root Cause Analysis</h2>
-                    <p>Real-time anomaly identification and automated maintenance recommendations.</p>
+                    <p>Real-time anomaly identification, severity classification, and automated maintenance recommendations.</p>
                 </div>
             </div>
 
             <div className={`fault-panel fault-panel-${statusClass}`}>
                 <div className="fault-icon">
                     {isNormal ? (
-                        <ShieldCheck size={36} color="#00C9A7" />
+                        <ShieldCheck size={36} color="#00E5BF" />
                     ) : (
                         <AlertTriangle size={36} color={statusClass === "critical" ? "#EF4444" : "#F59E0B"} />
                     )}
@@ -48,7 +50,7 @@ function FaultDetection({
                         )}
                     </div>
                     <p>
-                        Continuous threshold evaluation across thermal, mechanical vibration, and electrical load parameters.
+                        Continuous multi-sensor threshold evaluation across thermal, mechanical vibration, and electrical load parameters.
                     </p>
                 </div>
 

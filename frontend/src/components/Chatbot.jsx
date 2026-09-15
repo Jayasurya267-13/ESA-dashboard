@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, ArrowRight, Sparkles, Send, RotateCcw } from "lucide-react";
+import { Bot, ArrowRight, Sparkles, Send } from "lucide-react";
 
 function Chatbot({
     messages,
@@ -39,9 +39,11 @@ function Chatbot({
         <section id="assistant" className="dashboard-section">
             <div className="section-header">
                 <div>
-                    <div className="section-kicker">AI ASSISTANT</div>
-                    <h2>Maintenance Copilot</h2>
-                    <p>Conversational assistant analyzing live telemetry for machine diagnostics and safety.</p>
+                    <div className="section-kicker">
+                        <Bot size={13} /> AI COPILOT
+                    </div>
+                    <h2>Maintenance Assistant Copilot</h2>
+                    <p>Conversational assistant analyzing live telemetry for machine diagnostics, root causes, and safety advice.</p>
                 </div>
             </div>
 
@@ -50,16 +52,16 @@ function Chatbot({
                 <div className="chatbot-header">
                     <div className="chatbot-title">
                         <div className="chatbot-icon">
-                            <Bot size={22} color="#00C9A7" />
+                            <Bot size={22} color="#00E5BF" />
                         </div>
                         <div>
                             <h3>AI Maintenance Assistant</h3>
-                            <span>Active Machine: {activeMachineId}</span>
+                            <span>Active Asset Telemetry: {activeMachineId}</span>
                         </div>
                     </div>
 
                     <div className="assistant-online">
-                        <span className="status-dot"></span>
+                        <span className="status-dot online"></span>
                         Online
                     </div>
                 </div>
@@ -73,7 +75,7 @@ function Chatbot({
                                 className={`chat-message ${message.sender}`}
                             >
                                 <div className="chat-message-label">
-                                    {message.sender === "bot" ? "AI Assistant" : "Operator"}
+                                    {message.sender === "bot" ? "AI Maintenance Assistant" : "Operator"}
                                 </div>
                                 <div
                                     className="chat-message-text"
@@ -86,9 +88,9 @@ function Chatbot({
 
                         {isLoading && (
                             <div className="chat-message bot">
-                                <div className="chat-message-label">AI Assistant</div>
+                                <div className="chat-message-label">AI Maintenance Assistant</div>
                                 <div className="chat-message-text" style={{ fontStyle: "italic", color: "#94A3B8" }}>
-                                    Analyzing sensor telemetry and computing diagnostic response...
+                                    Analyzing live sensor telemetry and formulating diagnostic advisory...
                                 </div>
                             </div>
                         )}
@@ -99,7 +101,7 @@ function Chatbot({
                     <div className="quick-questions">
                         <div className="quick-title">
                             <Sparkles size={13} style={{ display: "inline", marginRight: "4px" }} />
-                            Quick Questions
+                            Quick Queries
                         </div>
 
                         {quickQuestions.map((q, index) => (
@@ -110,7 +112,7 @@ function Chatbot({
                                 disabled={isLoading}
                             >
                                 <span>{q}</span>
-                                <ArrowRight size={14} />
+                                <ArrowRight size={13} />
                             </button>
                         ))}
                     </div>
@@ -127,7 +129,7 @@ function Chatbot({
                                 handleSend();
                             }
                         }}
-                        placeholder={`Ask anything about ${activeMachineId} (e.g., 'Is temperature normal?')...`}
+                        placeholder={`Ask anything about ${activeMachineId} (e.g., 'Why is vibration high?')...`}
                         disabled={isLoading}
                     />
 
@@ -137,7 +139,7 @@ function Chatbot({
                         aria-label="Send message"
                     >
                         <span>Send</span>
-                        <Send size={16} />
+                        <Send size={15} />
                     </button>
                 </div>
             </div>

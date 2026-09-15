@@ -9,7 +9,8 @@ import {
     WifiOff,
     Gauge,
     Cpu,
-    CheckCircle2
+    CheckCircle2,
+    Layers
 } from "lucide-react";
 
 import "./App.css";
@@ -194,7 +195,6 @@ function App() {
     const handleSendMessage = async (queryText) => {
         if (!queryText || !queryText.trim()) return;
 
-        // Add user message
         setChatMessages((prev) => [
             ...prev,
             { sender: "user", text: queryText }
@@ -248,7 +248,6 @@ function App() {
             });
             if (res.ok) {
                 setSimulationMode(mode);
-                // Immediately refresh telemetry
                 await fetchTelemetry();
             }
         } catch (err) {
@@ -300,137 +299,157 @@ function App() {
                 />
 
                 {/* DASHBOARD CONTENT BODY */}
-                <div id="dashboard" className="dashboard-content">
+                <div className="dashboard-content">
 
-                    {/* HERO SECTION */}
-                    <section className="dashboard-hero">
-                        <div className="hero-background"></div>
-                        <div className="hero-overlay"></div>
+                    {/* =========================================================
+                        SEPARATE BLOCK 1: DASHBOARD OVERVIEW BLOCK
+                        ========================================================= */}
+                    <section id="dashboard" className="dashboard-section overview-section-block">
+                        <div className="section-header">
+                            <div>
+                                <div className="section-kicker">
+                                    <Sparkles size={13} /> SYSTEM OVERVIEW
+                                </div>
+                                <h2>Dashboard Overview</h2>
+                                <p>Operational health monitoring, backend connectivity, and live industrial fleet telemetry.</p>
+                            </div>
 
-                        <div className="hero-content">
-                            <div className="hero-main">
-                                <div className="hero-badge">
-                                    <Sparkles size={15} />
-                                    <span>EDGE AI MONITORING SYSTEM</span>
+                            <div className="status-row-integrated">
+                                <div className={`system-status ${getStatusClass(machineStatus)}`}>
+                                    <span className="status-dot"></span>
+                                    <span>System: {machineStatus}</span>
                                 </div>
 
-                                <h1>ESA Maintenance Dashboard</h1>
-                                <p>
-                                    Real-time industrial sensor telemetry, AI degradation forecasting,
-                                    and predictive failure detection for high-reliability machinery.
-                                </p>
+                                <div className={`connection-status ${getStatusClass(connectionStatus)}`}>
+                                    <span className="status-dot"></span>
+                                    <span>Backend: {connectionStatus}</span>
+                                </div>
+                            </div>
+                        </div>
 
-                                <div className="hero-stats">
-                                    <div className="hero-mini-card">
-                                        <div className="hero-mini-icon">
-                                            <HeartPulse size={20} />
-                                        </div>
-                                        <div>
-                                            <span>Machine Condition</span>
-                                            <strong className={`status-${getStatusClass(machineStatus)}`}>
-                                                {machineStatus.toUpperCase()}
-                                            </strong>
-                                        </div>
+                        {/* HERO BANNER CARD */}
+                        <div className="dashboard-hero">
+                            <div className="hero-background"></div>
+                            <div className="hero-overlay"></div>
+
+                            <div className="hero-content">
+                                <div className="hero-main">
+                                    <div className="hero-badge">
+                                        <Sparkles size={15} />
+                                        <span>EDGE AI MONITORING PLATFORM</span>
                                     </div>
 
-                                    <div className="hero-mini-card">
-                                        <div className="hero-mini-icon">
-                                            {connectionStatus === "Connected" ? (
-                                                <Wifi size={20} />
-                                            ) : (
-                                                <WifiOff size={20} color="#EF4444" />
-                                            )}
+                                    <h1>ESA Maintenance Dashboard</h1>
+                                    <p>
+                                        Continuous real-time multi-sensor telemetry, Edge AI degradation forecasting,
+                                        and automated failure prevention for rotating machinery.
+                                    </p>
+
+                                    <div className="hero-stats">
+                                        <div className="hero-mini-card">
+                                            <div className="hero-mini-icon">
+                                                <HeartPulse size={18} />
+                                            </div>
+                                            <div>
+                                                <span>Machine Condition</span>
+                                                <strong className={`status-${getStatusClass(machineStatus)}`}>
+                                                    {machineStatus.toUpperCase()}
+                                                </strong>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <span>Backend Connection</span>
-                                            <strong style={{ color: connectionStatus === "Connected" ? "#22C55E" : "#EF4444" }}>
-                                                {connectionStatus.toUpperCase()}
-                                            </strong>
+
+                                        <div className="hero-mini-card">
+                                            <div className="hero-mini-icon">
+                                                {connectionStatus === "Connected" ? (
+                                                    <Wifi size={18} />
+                                                ) : (
+                                                    <WifiOff size={18} color="#EF4444" />
+                                                )}
+                                            </div>
+                                            <div>
+                                                <span>Backend Connection</span>
+                                                <strong style={{ color: connectionStatus === "Connected" ? "#10B981" : "#EF4444" }}>
+                                                    {connectionStatus.toUpperCase()}
+                                                </strong>
+                                            </div>
+                                        </div>
+
+                                        <div className="hero-mini-card">
+                                            <div className="hero-mini-icon">
+                                                <Cpu size={18} />
+                                            </div>
+                                            <div>
+                                                <span>Data Stream</span>
+                                                <strong style={{ color: "#00E5BF" }}>
+                                                    {dataSource.toUpperCase()}
+                                                </strong>
+                                            </div>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div className="hero-mini-card">
-                                        <div className="hero-mini-icon">
-                                            <Cpu size={20} />
-                                        </div>
-                                        <div>
-                                            <span>Data Stream</span>
-                                            <strong style={{ color: "#00C9A7" }}>
-                                                {dataSource.toUpperCase()}
-                                            </strong>
-                                        </div>
+                                <div className="hero-visual">
+                                    <div className={`hero-visual-glow glow-${getStatusClass(machineStatus)}`}>
+                                        <Gauge size={88} strokeWidth={1.3} />
+                                    </div>
+                                    <div className="hero-visual-text">
+                                        <span>OVERALL HEALTH</span>
+                                        <strong>{health}%</strong>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div className="hero-visual">
-                                <div className={`hero-visual-glow glow-${getStatusClass(machineStatus)}`}>
-                                    <Gauge size={95} strokeWidth={1.2} />
-                                </div>
-                                <div className="hero-visual-text">
-                                    <span>OVERALL HEALTH</span>
-                                    <strong>{health}%</strong>
-                                </div>
+                        {/* STATUS FOOTER BAR */}
+                        <div className="status-row">
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                <Cpu size={16} color="#00E5BF" />
+                                <span style={{ fontSize: "13px", color: "#F8FAFC" }}>
+                                    Active Asset: <strong style={{ color: "#00E5BF" }}>{activeMachineObj.name}</strong> ({activeMachineObj.id})
+                                </span>
+                            </div>
+
+                            <div className="last-updated">
+                                Last Telemetry Sync: <strong>{lastUpdated}</strong>
                             </div>
                         </div>
                     </section>
 
-                    {/* STATUS BAR */}
-                    <div className="status-row">
-                        <div className={`system-status ${getStatusClass(machineStatus)}`}>
-                            <span className="status-dot"></span>
-                            <span>System Status: {machineStatus}</span>
-                        </div>
-
-                        <div className={`connection-status ${getStatusClass(connectionStatus)}`}>
-                            <span className="status-dot"></span>
-                            <span>Backend: {connectionStatus}</span>
-                        </div>
-
-                        <div className="last-updated">
-                            Last Telemetry Sync: {lastUpdated}
-                        </div>
-                    </div>
-
-                    {/* MACHINE OVERVIEW / MANAGEMENT */}
+                    {/* =========================================================
+                        SEPARATE BLOCK 2: MACHINE FLEET MANAGEMENT
+                        ========================================================= */}
                     <section id="machines" className="dashboard-section">
                         <div className="section-header">
                             <div>
-                                <div className="section-kicker">FLEET ASSETS</div>
+                                <div className="section-kicker">
+                                    <Layers size={13} /> FLEET ASSETS
+                                </div>
                                 <h2>Machine Overview & Selection</h2>
-                                <p>Select monitored industrial machinery to inspect active telemetry and status.</p>
+                                <p>Select monitored industrial machinery to inspect active telemetry streams and health metrics.</p>
                             </div>
+
+                            <select
+                                className="machine-selector"
+                                value={selectedMachine}
+                                onChange={(e) => setSelectedMachine(e.target.value)}
+                                aria-label="Select Monitored Machine"
+                            >
+                                {machines.map((m) => (
+                                    <option key={m.id} value={m.id}>
+                                        {m.id} — {m.name} ({m.location})
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <div className="machine-management-card">
-                            <div className="machine-management-header">
-                                <div>
-                                    <div className="section-kicker">MONITORED ASSET</div>
-                                    <h3>{activeMachineObj.name}</h3>
-                                    <p>Select asset to dynamically load sensor streams and AI diagnostics.</p>
-                                </div>
-
-                                <select
-                                    className="machine-selector"
-                                    value={selectedMachine}
-                                    onChange={(e) => setSelectedMachine(e.target.value)}
-                                    aria-label="Select Machine"
-                                >
-                                    {machines.map((m) => (
-                                        <option key={m.id} value={m.id}>
-                                            {m.id} - {m.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
                             <div className="machine-information">
                                 <div className="machine-info-item">
-                                    <span>Machine ID</span>
+                                    <span>Asset ID</span>
                                     <strong>{activeMachineObj.id}</strong>
                                 </div>
                                 <div className="machine-info-item">
-                                    <span>Asset Type</span>
+                                    <span>Equipment Type</span>
                                     <strong>{activeMachineObj.type}</strong>
                                 </div>
                                 <div className="machine-info-item">
@@ -452,7 +471,7 @@ function App() {
                                 title="Temperature"
                                 value={temperature}
                                 unit="°C"
-                                icon={<Thermometer size={28} />}
+                                icon={<Thermometer size={26} />}
                                 status={getTempStatus(temperature)}
                                 thresholdInfo="Warn >= 70 | Crit >= 80"
                             />
@@ -461,7 +480,7 @@ function App() {
                                 title="Vibration"
                                 value={vibration}
                                 unit="mm/s"
-                                icon={<Activity size={28} />}
+                                icon={<Activity size={26} />}
                                 status={getVibStatus(vibration)}
                                 thresholdInfo="Warn >= 5.0 | Crit >= 8.0"
                             />
@@ -470,7 +489,7 @@ function App() {
                                 title="Current"
                                 value={current}
                                 unit="A"
-                                icon={<Zap size={28} />}
+                                icon={<Zap size={26} />}
                                 status={getCurrStatus(current)}
                                 thresholdInfo="Warn >= 10.0 | Crit >= 12.0"
                             />
@@ -479,25 +498,29 @@ function App() {
                                 title="Machine Health"
                                 value={health}
                                 unit="%"
-                                icon={<HeartPulse size={28} />}
+                                icon={<HeartPulse size={26} />}
                                 status={machineStatus}
                                 thresholdInfo="Norm: 80-100 | Warn: 60-79"
                             />
                         </div>
                     </section>
 
-                    {/* LIVE SENSOR MONITORING */}
+                    {/* =========================================================
+                        SEPARATE BLOCK 3: LIVE SENSOR MONITORING
+                        ========================================================= */}
                     <section id="sensors" className="dashboard-section">
                         <div className="section-header">
                             <div>
-                                <div className="section-kicker">CONTINUOUS TELEMETRY</div>
+                                <div className="section-kicker">
+                                    <Activity size={13} /> CONTINUOUS TELEMETRY
+                                </div>
                                 <h2>Live Sensor Monitoring & History</h2>
-                                <p>Dynamic time-series telemetry visualization across physical parameters.</p>
+                                <p>Dynamic multi-sensor time-series stream across thermal, vibration velocity, and electrical load.</p>
                             </div>
 
                             <div className="section-live-status">
                                 <span className="status-dot"></span>
-                                LIVE
+                                LIVE STREAM
                             </div>
                         </div>
 
@@ -508,37 +531,39 @@ function App() {
                         <div className="trend-placeholder">
                             <div className="trend-line">
                                 <div>
-                                    <span>Temperature Stream</span>
-                                    <small>Thermal RTD / Thermocouple</small>
+                                    <span>Thermal Sensor Stream</span>
+                                    <small>RTD / Thermocouple (°C)</small>
                                 </div>
-                                <strong style={{ color: getTempStatus(temperature) === "Critical" ? "#EF4444" : getTempStatus(temperature) === "Warning" ? "#F59E0B" : "#F1F5F9" }}>
+                                <strong style={{ color: getTempStatus(temperature) === "Critical" ? "#EF4444" : getTempStatus(temperature) === "Warning" ? "#F59E0B" : "#F8FAFC" }}>
                                     {temperature} °C
                                 </strong>
                             </div>
 
                             <div className="trend-line">
                                 <div>
-                                    <span>Vibration Stream</span>
-                                    <small>Triaxial Accelerometer (Velocity RMS)</small>
+                                    <span>Vibration Velocity Stream</span>
+                                    <small>Triaxial Accelerometer RMS (mm/s)</small>
                                 </div>
-                                <strong style={{ color: getVibStatus(vibration) === "Critical" ? "#EF4444" : getVibStatus(vibration) === "Warning" ? "#F59E0B" : "#F1F5F9" }}>
+                                <strong style={{ color: getVibStatus(vibration) === "Critical" ? "#EF4444" : getVibStatus(vibration) === "Warning" ? "#F59E0B" : "#8B5CF6" }}>
                                     {vibration} mm/s
                                 </strong>
                             </div>
 
                             <div className="trend-line">
                                 <div>
-                                    <span>Electrical Load</span>
-                                    <small>Current Transformer (RMS Current)</small>
+                                    <span>Electrical Load Stream</span>
+                                    <small>Current Transformer RMS (A)</small>
                                 </div>
-                                <strong style={{ color: getCurrStatus(current) === "Critical" ? "#EF4444" : getCurrStatus(current) === "Warning" ? "#F59E0B" : "#F1F5F9" }}>
+                                <strong style={{ color: getCurrStatus(current) === "Critical" ? "#EF4444" : getCurrStatus(current) === "Warning" ? "#F59E0B" : "#00E5BF" }}>
                                     {current} A
                                 </strong>
                             </div>
                         </div>
                     </section>
 
-                    {/* FAULT DETECTION SECTION */}
+                    {/* =========================================================
+                        SEPARATE BLOCK 4: FAULT DETECTION & DIAGNOSTICS
+                        ========================================================= */}
                     <FaultDetection
                         machineStatus={machineStatus}
                         faultMessage={faultMessage}
@@ -548,12 +573,16 @@ function App() {
                         faults={faults}
                     />
 
-                    {/* AI PREDICTION SECTION */}
+                    {/* =========================================================
+                        SEPARATE BLOCK 5: AI PREDICTION
+                        ========================================================= */}
                     <AIPrediction
                         aiPrediction={aiPrediction}
                     />
 
-                    {/* MAINTENANCE ASSISTANT SECTION */}
+                    {/* =========================================================
+                        SEPARATE BLOCK 6: MAINTENANCE ASSISTANT (CHATBOT)
+                        ========================================================= */}
                     <Chatbot
                         messages={chatMessages}
                         onSendMessage={handleSendMessage}
@@ -561,7 +590,9 @@ function App() {
                         activeMachineId={selectedMachine}
                     />
 
-                    {/* SETTINGS SECTION */}
+                    {/* =========================================================
+                        SEPARATE BLOCK 7: SETTINGS & HARDWARE GATEWAY
+                        ========================================================= */}
                     <SettingsSection
                         activeMachineId={selectedMachine}
                         onFaultSimulate={handleFaultSimulate}
