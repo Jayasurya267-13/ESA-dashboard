@@ -368,7 +368,7 @@ select:focus-visible {
     z-index: 0;
     background-image: 
         linear-gradient(90deg, rgba(9, 17, 24, 0.95) 0%, rgba(9, 17, 24, 0.82) 40%, rgba(9, 17, 24, 0.65) 100%),
-        url("/images/industrial-machine.jpg");
+        url("/images/industrial-machine.png");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
