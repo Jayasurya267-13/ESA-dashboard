@@ -528,7 +528,7 @@ class MachineManager:
                     "machine_name": "CNC Milling Machine 01",
                     "type": "Preventive Maintenance",
                     "date": "2026-08-12",
-                    "technician": "Alex Morgan (Lead)",
+                    "technician": "Jayasurya R (Lead)",
                     "status": "Completed",
                     "description": "Spindle bearing vibration check, high-pressure coolant pump servicing, and 5-axis calibration.",
                     "next_due": "2026-10-30"
@@ -539,7 +539,7 @@ class MachineManager:
                     "machine_name": "Motor Pump 01",
                     "type": "Inspection & Lubrication",
                     "date": "2026-07-15",
-                    "technician": "David Chen",
+                    "technician": "Harish kumar A",
                     "status": "Completed",
                     "description": "Grease replenished with Mobil Polyrex EM. Shaft alignment verified with laser tool (0.02mm offset).",
                     "next_due": "2026-10-15"
@@ -550,7 +550,7 @@ class MachineManager:
                     "machine_name": "CNC Turning Machine 01",
                     "type": "Tool Replacement",
                     "date": "2026-07-28",
-                    "technician": "Marcus Vance",
+                    "technician": "Harish kumar A",
                     "status": "Completed",
                     "description": "Replaced carbide inserts on turret stations 2, 5, and 8. Slideway lubrication pressure verified.",
                     "next_due": "2026-11-10"
@@ -561,7 +561,7 @@ class MachineManager:
                     "machine_name": "Cooling Fan 01",
                     "type": "Corrective Maintenance",
                     "date": "2026-06-18",
-                    "technician": "Elena Rostova",
+                    "technician": "Umesh Madhu P",
                     "status": "Completed",
                     "description": "Replaced worn V-belt drive and tightened motor base dampener springs to eliminate resonance.",
                     "next_due": "2026-09-25"
@@ -572,7 +572,7 @@ class MachineManager:
                     "machine_name": "CNC Vertical Machining Center 01",
                     "type": "Spindle Inspection",
                     "date": "2026-08-20",
-                    "technician": "Alex Morgan",
+                    "technician": "Jayasurya R",
                     "status": "Completed",
                     "description": "Spindle thermal runout check. Cleaned pneumatic drawbar gripper and tested tool release piston.",
                     "next_due": "2026-11-20"
@@ -589,7 +589,7 @@ class MachineManager:
             "machine_name": self.get_machine(record.get("machine_id", "MTR-001")).name,
             "type": record.get("type", "General Inspection"),
             "date": record.get("date", datetime.now().strftime("%Y-%m-%d")),
-            "technician": record.get("technician", "Maintenance Engineer"),
+            "technician": record.get("technician", "Jayasurya R (Lead)"),
             "status": record.get("status", "Scheduled"),
             "description": record.get("description", "Scheduled service inspection."),
             "next_due": record.get("next_due", "2026-12-31")

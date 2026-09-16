@@ -65,7 +65,7 @@ def run_tests():
         machine_id="CNC-001",
         type="Spindle Laser Runout Check",
         description="Verified dynamic spindle concentricity using laser interferometer.",
-        technician="Alex Morgan (Lead)",
+        technician="Jayasurya R (Lead)",
         date="2026-09-16",
         next_due="2026-11-15",
         status="Scheduled"

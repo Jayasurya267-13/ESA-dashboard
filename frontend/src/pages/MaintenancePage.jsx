@@ -36,7 +36,7 @@ export default function MaintenancePage() {
     // Form state for creating new maintenance record
     const [formMachine, setFormMachine] = useState("CNC-001");
     const [formType, setFormType] = useState("Preventive Maintenance");
-    const [formTech, setFormTech] = useState("Alex Morgan (Lead)");
+    const [formTech, setFormTech] = useState("Jayasurya R (Lead)");
     const [formDesc, setFormDesc] = useState("");
     const [formDate, setFormDate] = useState(new Date().toISOString().split("T")[0]);
     const [formNextDue, setFormNextDue] = useState("2026-11-30");
@@ -309,7 +309,7 @@ export default function MaintenancePage() {
                                         type="text"
                                         value={formTech}
                                         onChange={(e) => setFormTech(e.target.value)}
-                                        placeholder="e.g. Alex Morgan, David Chen"
+                                        placeholder="e.g. Jayasurya R, Harish kumar A, Umesh Madhu P"
                                         required
                                     />
                                 </div>
