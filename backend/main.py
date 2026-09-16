@@ -70,6 +70,16 @@ class FaultSimulationRequest(BaseModel):
     )
 
 
+class MaintenanceRecordInput(BaseModel):
+    machine_id: str
+    type: str = "Inspection & Servicing"
+    description: str = "Standard preventative maintenance inspection."
+    technician: str = "Maintenance Engineer"
+    date: Optional[str] = None
+    next_due: Optional[str] = None
+    status: Optional[str] = "Scheduled"
+
+
 # =========================================================
 # API ENDPOINTS
 # =========================================================
@@ -106,6 +116,36 @@ def get_machine_detail(machine_id: str):
     machine = manager.get_machine(machine_id)
     machine.update_simulation()
     return machine.get_full_status()
+
+
+@app.get("/api/alerts")
+def get_alerts(machine_id: Optional[str] = None, severity: Optional[str] = None):
+    """Retrieve active and historical predictive maintenance alerts across the fleet."""
+    alerts = manager.get_fleet_alerts()
+    if machine_id:
+        alerts = [a for a in alerts if a["machine_id"] == machine_id]
+    if severity and severity.lower() != "all":
+        alerts = [a for a in alerts if a["severity"].lower() == severity.lower()]
+    return alerts
+
+
+@app.get("/api/maintenance")
+def get_maintenance_records(machine_id: Optional[str] = None):
+    """Retrieve scheduled and historical maintenance logs."""
+    records = manager.get_maintenance_records()
+    if machine_id:
+        records = [r for r in records if r["machine_id"] == machine_id]
+    return records
+
+
+@app.post("/api/maintenance")
+def create_maintenance_record(record: MaintenanceRecordInput):
+    """Create a new maintenance or inspection work order."""
+    created = manager.add_maintenance_record(record.model_dump())
+    logger.info(f"Created maintenance record {created['id']} for {record.machine_id}")
+    return created
+
+
 
 
 @app.get("/api/sensor-data")
@@ -258,7 +298,47 @@ def maintenance_chat(request: ChatRequest):
             )
 
         # -------------------------------------------------------------
-        # 4. CURRENT / ELECTRICAL QUERIES
+        # 4. CNC SPINDLE DIAGNOSTICS
+        # -------------------------------------------------------------
+        elif any(w in question for w in ["spindle", "rpm", "spindle load", "spindle speed"]):
+            if machine.is_cnc:
+                s_speed = machine.current_spindle_speed
+                s_load = machine.current_spindle_load
+                answer = (
+                    f"{context_prefix}"
+                    f"⚙️ CNC Spindle Telemetry Analysis:\n"
+                    f"• Spindle Speed: {s_speed} RPM\n"
+                    f"• Spindle Motor Load: {s_load}%\n"
+                    f"• Core Thermal Status: {temperature} °C\n\n"
+                    f"Assessment:\n"
+                    f"{'Spindle load is elevated (>80%). Adjust feed rate and check tool sharpness to prevent spindle bearing fatigue.' if s_load > 80.0 else 'Spindle performance is optimal with smooth torque delivery.'}\n\n"
+                    f"Recommended Action: Verify pneumatic drawbar pressure and spindle chiller coolant supply."
+                )
+            else:
+                answer = f"{context_prefix}{machine.name} is an industrial motor/pump asset without a CNC cutting spindle."
+
+        # -------------------------------------------------------------
+        # 4B. CNC TOOL WEAR DIAGNOSTICS
+        # -------------------------------------------------------------
+        elif any(w in question for w in ["tool", "wear", "insert", "cutter", "flute"]):
+            if machine.is_cnc:
+                t_wear = machine.current_tool_wear
+                t_status = "CRITICAL (Replace Immediately)" if t_wear >= 75.0 else "ELEVATED (Schedule Swap)" if t_wear >= 50.0 else "GOOD"
+                answer = (
+                    f"{context_prefix}"
+                    f"🔪 CNC Tool Condition & Degradation Analysis:\n"
+                    f"• Tool Wear Index: {t_wear}%\n"
+                    f"• Health State: {t_status}\n"
+                    f"• Maximum Tolerance: 80.0%\n\n"
+                    f"Assessment:\n"
+                    f"{'Cutting tool wear is critical! High risk of surface finish loss, chatter marks, or tool breakage. Replace tool insert in ATC.' if t_wear >= 75.0 else 'Tool is showing steady abrasive wear. Monitor vibration during finishing passes.' if t_wear >= 50.0 else 'Tooling edge is sharp and operating in prime wear region.'}\n\n"
+                    f"Recommended Action: Check ATC carousel for replacement indexable inserts."
+                )
+            else:
+                answer = f"{context_prefix}Tool wear tracking is applied to CNC milling & turning centers. {machine.name} is a fixed motor drive."
+
+        # -------------------------------------------------------------
+        # 4C. CURRENT / ELECTRICAL QUERIES
         # -------------------------------------------------------------
         elif any(w in question for w in ["current", "electrical", "amp", "amps", "amperage", "load", "motor stress", "voltage"]):
             answer = (
@@ -271,6 +351,25 @@ def maintenance_chat(request: ChatRequest):
                 f"Recommended Action:\n"
                 f"{'Inspect mechanical load, check for rotor binding, and verify supply phase balance.' if curr_sev != 'Normal' else 'Continue standard electrical monitoring.'}"
             )
+
+        # -------------------------------------------------------------
+        # 4D. CNC COOLANT SYSTEM
+        # -------------------------------------------------------------
+        elif any(w in question for w in ["coolant", "fluid", "cutting fluid", "coolant temp", "coolant level"]):
+            if machine.is_cnc:
+                c_temp = machine.current_coolant_temp
+                c_lvl = machine.current_coolant_level
+                answer = (
+                    f"{context_prefix}"
+                    f"🧪 CNC Coolant & Thermal Delivery:\n"
+                    f"• Coolant Reservoir Level: {c_lvl}%\n"
+                    f"• Coolant Temp: {c_temp} °C\n\n"
+                    f"Assessment:\n"
+                    f"{'Coolant reservoir level is low (<40%). Refill coolant tank and verify refractometer concentration (6-8% brix).' if c_lvl < 40.0 else 'Coolant level and recirculation temperature are within optimal operational range.'}\n\n"
+                    f"Recommended Action: Maintain regular tramp oil skimming and fluid filter inspection."
+                )
+            else:
+                answer = f"{context_prefix}{machine.name} does not feature a recirculating flood coolant system."
 
         # -------------------------------------------------------------
         # 5. MAINTENANCE & ACTION QUERIES
