@@ -12,16 +12,17 @@ import {
     Save,
     LogOut,
     Activity,
-    Layers
+    Layers,
+    Users
 } from "lucide-react";
 
 export default function ProfilePage() {
     const { user, updateProfile, logout } = useAuth();
     const navigate = useNavigate();
 
-    const [name, setName] = useState(user?.name || "Dr. Alex Morgan");
-    const [department, setDepartment] = useState(user?.department || "Reliability Engineering");
-    const [email, setEmail] = useState(user?.email || "engineer@esa.io");
+    const [name, setName] = useState(user?.name || "Jayasurya R");
+    const [department, setDepartment] = useState(user?.department || "Mechanical Reliability");
+    const [email, setEmail] = useState(user?.email || "sit24ec101@sairamtap.edu.in");
     const [shift, setShift] = useState("Shift A (07:00 - 15:30)");
     const [saveMsg, setSaveMsg] = useState("");
 
@@ -56,20 +57,20 @@ export default function ProfilePage() {
                 {/* LEFT: IDENTITY CARD */}
                 <div className="dashboard-section profile-identity-card">
                     <div className="profile-avatar-large">
-                        {user?.avatar || "OP"}
+                        {user?.avatar || "JR"}
                     </div>
 
-                    <h2>{user?.name || "Maintenance Engineer"}</h2>
-                    <span className="profile-badge-pill">{user?.role || "Reliability Engineer"}</span>
+                    <h2>{user?.name || "Jayasurya R"}</h2>
+                    <span className="profile-badge-pill">{user?.role || "Senior Maintenance Engineer"}</span>
 
                     <div className="profile-meta-list">
                         <div className="pml-item">
                             <Mail size={15} color="#00E5BF" />
-                            <span>{user?.email || "engineer@esa.io"}</span>
+                            <span>{user?.email || "sit24ec101@sairamtap.edu.in"}</span>
                         </div>
                         <div className="pml-item">
                             <Briefcase size={15} color="#8B5CF6" />
-                            <span>{user?.department || "Reliability Engineering"}</span>
+                            <span>{user?.department || "Mechanical Reliability"}</span>
                         </div>
                         <div className="pml-item">
                             <Clock size={15} color="#F59E0B" />
@@ -213,6 +214,47 @@ export default function ProfilePage() {
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+
+                    {/* PROJECT TEAM PERSONNEL LIST */}
+                    <div className="dashboard-section">
+                        <div className="section-header">
+                            <div>
+                                <div className="section-kicker">
+                                    <Users size={13} /> PROJECT TEAM ROSTER
+                                </div>
+                                <h3>Predictive Maintenance Project Team</h3>
+                            </div>
+                        </div>
+
+                        <div className="team-members-grid">
+                            <div className="team-member-card">
+                                <div className="team-avatar-pill avatar-teal">JR</div>
+                                <div className="team-meta">
+                                    <strong>Jayasurya R</strong>
+                                    <span className="team-role-tag">Senior Maintenance Engineer</span>
+                                    <span className="team-email-tag">sit24ec101@sairamtap.edu.in</span>
+                                </div>
+                            </div>
+
+                            <div className="team-member-card">
+                                <div className="team-avatar-pill avatar-emerald">HA</div>
+                                <div className="team-meta">
+                                    <strong>Harish kumar A</strong>
+                                    <span className="team-role-tag">Plant Operations Lead</span>
+                                    <span className="team-email-tag">sit24ec105@sairamtap.edu.in</span>
+                                </div>
+                            </div>
+
+                            <div className="team-member-card">
+                                <div className="team-avatar-pill avatar-violet">UM</div>
+                                <div className="team-meta">
+                                    <strong>Umesh Madhu P</strong>
+                                    <span className="team-role-tag">Industrial Systems Architect</span>
+                                    <span className="team-email-tag">sit24ec086@sairamtap.edu.in</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

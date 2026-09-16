@@ -4,31 +4,31 @@ const AuthContext = createContext(null);
 
 export const DEMO_ACCOUNTS = [
     {
-        email: "engineer@esa.io",
+        email: "sit24ec101@sairamtap.edu.in",
         password: "engineer123",
-        name: "Alex Morgan",
+        name: "Jayasurya R",
         role: "Senior Maintenance Engineer",
         department: "Mechanical Reliability",
         badgeId: "ESA-ENG-402",
-        avatar: "AM"
+        avatar: "JR"
     },
     {
-        email: "operator@esa.io",
+        email: "sit24ec105@sairamtap.edu.in",
         password: "operator123",
-        name: "David Chen",
+        name: "Harish kumar A",
         role: "Plant Operations Lead",
         department: "Production Floor A",
         badgeId: "ESA-OPS-109",
-        avatar: "DC"
+        avatar: "HA"
     },
     {
-        email: "admin@esa.io",
+        email: "sit24ec086@sairamtap.edu.in",
         password: "admin123",
-        name: "Elena Rostova",
+        name: "Umesh Madhu P",
         role: "Industrial Systems Architect",
         department: "Edge AI & IoT Systems",
         badgeId: "ESA-ADM-001",
-        avatar: "ER"
+        avatar: "UM"
     }
 ];
 
@@ -38,7 +38,21 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
-            return saved ? JSON.parse(saved) : null;
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                // Automatically migrate previously stored demo identity to project team identity
+                if (parsed.email === "engineer@esa.io" || parsed.name === "Alex Morgan") {
+                    return { ...DEMO_ACCOUNTS[0], loginTime: parsed.loginTime || new Date().toISOString() };
+                }
+                if (parsed.email === "operator@esa.io" || parsed.name === "David Chen") {
+                    return { ...DEMO_ACCOUNTS[1], loginTime: parsed.loginTime || new Date().toISOString() };
+                }
+                if (parsed.email === "admin@esa.io" || parsed.name === "Elena Rostova") {
+                    return { ...DEMO_ACCOUNTS[2], loginTime: parsed.loginTime || new Date().toISOString() };
+                }
+                return parsed;
+            }
+            return null;
         } catch {
             return null;
         }

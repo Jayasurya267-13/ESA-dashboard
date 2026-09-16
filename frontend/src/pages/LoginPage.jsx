@@ -23,7 +23,7 @@ export default function LoginPage() {
 
     const from = location.state?.from?.pathname || "/dashboard";
 
-    const [email, setEmail] = useState("engineer@esa.io");
+    const [email, setEmail] = useState("sit24ec101@sairamtap.edu.in");
     const [password, setPassword] = useState("engineer123");
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(true);
@@ -131,7 +131,7 @@ export default function LoginPage() {
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="e.g. engineer@esa.io"
+                                    placeholder="e.g. sit24ec101@sairamtap.edu.in"
                                     required
                                     autoComplete="username"
                                 />
@@ -211,8 +211,9 @@ export default function LoginPage() {
                                 className="demo-account-chip"
                                 disabled={loading}
                             >
-                                <span className="demo-chip-role">Maintenance Engineer</span>
-                                <span className="demo-chip-email">engineer@esa.io</span>
+                                <span className="demo-chip-role">Senior Maintenance Engineer</span>
+                                <strong style={{ fontSize: "11px", color: "#F8FAFC" }}>Jayasurya R</strong>
+                                <span className="demo-chip-email">sit24ec101@sairamtap.edu.in</span>
                             </button>
 
                             <button
@@ -221,8 +222,9 @@ export default function LoginPage() {
                                 className="demo-account-chip"
                                 disabled={loading}
                             >
-                                <span className="demo-chip-role">Plant Operator</span>
-                                <span className="demo-chip-email">operator@esa.io</span>
+                                <span className="demo-chip-role">Plant Operations Lead</span>
+                                <strong style={{ fontSize: "11px", color: "#F8FAFC" }}>Harish kumar A</strong>
+                                <span className="demo-chip-email">sit24ec105@sairamtap.edu.in</span>
                             </button>
 
                             <button
@@ -231,8 +233,9 @@ export default function LoginPage() {
                                 className="demo-account-chip"
                                 disabled={loading}
                             >
-                                <span className="demo-chip-role">System Admin</span>
-                                <span className="demo-chip-email">admin@esa.io</span>
+                                <span className="demo-chip-role">Industrial Systems Architect</span>
+                                <strong style={{ fontSize: "11px", color: "#F8FAFC" }}>Umesh Madhu P</strong>
+                                <span className="demo-chip-email">sit24ec086@sairamtap.edu.in</span>
                             </button>
                         </div>
 
@@ -256,9 +259,9 @@ export default function LoginPage() {
                             In demo/academic mode, you can sign in instantly using any of the three pre-configured accounts:
                         </p>
                         <ul style={{ fontSize: "12px", color: "#CBD5E1", margin: "0 0 18px", paddingLeft: "20px", lineHeight: 1.8 }}>
-                            <li><code>engineer@esa.io</code> / <code>engineer123</code> (Engineer)</li>
-                            <li><code>operator@esa.io</code> / <code>operator123</code> (Operator)</li>
-                            <li><code>admin@esa.io</code> / <code>admin123</code> (Admin)</li>
+                            <li><code>sit24ec101@sairamtap.edu.in</code> / <code>engineer123</code> (Jayasurya R - Senior Maintenance Engineer)</li>
+                            <li><code>sit24ec105@sairamtap.edu.in</code> / <code>operator123</code> (Harish kumar A - Plant Operations Lead)</li>
+                            <li><code>sit24ec086@sairamtap.edu.in</code> / <code>admin123</code> (Umesh Madhu P - Industrial Systems Architect)</li>
                         </ul>
                         <button
                             type="button"

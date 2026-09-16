@@ -103,11 +103,11 @@ function Header({
                         aria-haspopup="true"
                     >
                         <div className="user-avatar-pill">
-                            {user?.avatar || "OP"}
+                            {user?.avatar || "JR"}
                         </div>
                         <div className="user-text-meta">
-                            <span className="user-display-name">{user?.name || "Engineer"}</span>
-                            <span className="user-display-role">{user?.role?.split(" ")[0] || "Staff"}</span>
+                            <span className="user-display-name">{user?.name || "Jayasurya R"}</span>
+                            <span className="user-display-role">{user?.role || "Senior Maintenance Engineer"}</span>
                         </div>
                         <ChevronDown size={14} color="#94A3B8" />
                     </button>
@@ -115,11 +115,11 @@ function Header({
                     {dropdownOpen && (
                         <div className="user-profile-menu">
                             <div className="profile-menu-header">
-                                <div className="profile-menu-avatar">{user?.avatar || "OP"}</div>
+                                <div className="profile-menu-avatar">{user?.avatar || "JR"}</div>
                                 <div>
-                                    <h4>{user?.name || "Operator"}</h4>
-                                    <span className="profile-role-badge">{user?.role || "Maintenance Staff"}</span>
-                                    <p className="profile-email-sub">{user?.email || "staff@esa.io"}</p>
+                                    <h4>{user?.name || "Jayasurya R"}</h4>
+                                    <span className="profile-role-badge">{user?.role || "Senior Maintenance Engineer"}</span>
+                                    <p className="profile-email-sub">{user?.email || "sit24ec101@sairamtap.edu.in"}</p>
                                 </div>
                             </div>
 
@@ -137,7 +137,7 @@ function Header({
 
                                 <div className="profile-menu-item-static">
                                     <Shield size={14} color="#8B5CF6" />
-                                    <span>Dept: {user?.department || "Operations"}</span>
+                                    <span>Dept: {user?.department || "Mechanical Reliability"}</span>
                                 </div>
                             </div>
 
