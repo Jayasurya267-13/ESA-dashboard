@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # ESA Dashboard
 ## Edge AI Based Predictive Maintenance System
 
@@ -431,4 +431,4 @@ The modular backend architecture is designed to host offline or online machine l
 - **Phase 4 (Frontend Modularization & Industrial UI/UX)**: Completed.
 - **Phase 5 (Hardware Firmwares & Verification)**: Completed.
 - **Platform Status**: Stable, tested, and presentation-ready.
->>>>>>> b222809 ("UI/UX and backend works")
+
